@@ -130,7 +130,7 @@ export class DlistComponent implements OnInit {
     if (!this.driver) return;
 
     const payload = {
-       driverId: this.driverId,
+      driverId: this.driverId,
       partyAmount: this.newCommission.partyAmount,
       driverCommisionAmount: this.newCommission.commissionAmount,
       status: this.newCommission.status,
@@ -173,12 +173,11 @@ export class DlistComponent implements OnInit {
   }
 
   updateCommission() {
-    if (!this.driverId || !this.editCommission.entryId) {
+    if (!this.editCommission.entryId) {
       return;
     }
 
     const payload = {
-      driverId: this.driverId,
       entryId: this.editCommission.entryId,
       partyAmount: this.editCommission.partyAmount,
       driverCommisionAmount: this.editCommission.driverCommisionAmount,
@@ -186,7 +185,7 @@ export class DlistComponent implements OnInit {
     };
 
     this.http.patch(
-      ` http://35.198.28.86:5000/api/admin/edit-driver-commision-entry`,
+      `http://35.198.28.86:5000/api/admin/edit-driver-commision-entry`,
       payload,
       { headers: this.getHeaders() }
     ).subscribe({
