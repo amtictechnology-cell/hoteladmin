@@ -32,7 +32,7 @@ export class DashboardComponent {
   }
 
   getDriversCount() {
-    this.http.get<any>('Http://localhost:5000/api/admin/get-drivers',
+    this.http.get<any>('https://hotel-api.duckdns.org/api/admin/get-drivers',
       { headers: this.getHeaders() })
       .subscribe({
         next: (res: any) => {
@@ -41,7 +41,7 @@ export class DashboardComponent {
       });
   }
   getStaffCount() {
-    this.http.get<any>('Http://localhost:5000/api/admin/staff/get-list',
+    this.http.get<any>('https://hotel-api.duckdns.org/api/admin/staff/get-list',
       { headers: this.getHeaders() })
       .subscribe({
         next: (res: any) => {

@@ -50,7 +50,7 @@ export class AllDriver {
 
   getDrivers() {
     this.http
-      .get<any>('Http://localhost:5000/api/admin/get-drivers', {
+      .get<any>('https://hotel-api.duckdns.org/api/admin/get-drivers', {
         headers: this.getHeaders(),
       })
       .subscribe({
@@ -78,16 +78,27 @@ export class AllDriver {
     console.log("entry");
 
     this.http
-      .get<any>('Http://localhost:5000/api/admin/get-driver-commision-entries', {
+      .get<any>('https://hotel-api.duckdns.org/api/admin/get-driver-commision-entries', {
         headers: this.getHeaders(),
       })
       .subscribe({
         next: (res) => {
           const allEntries = res.entries || [];
 
-          const driverEntries = allEntries.filter(
-            (e: any) => e.driverId === driver._id
-          );
+          // 🔥 Defensive filtering: Handle both MongoDB ObjectId AND driver codes
+          const driverEntries = allEntries.filter((e: any) => {
+            const primaryMatch = e.driverId === driver._id;
+            const fallbackMatch = e.driverId === driver.driverId;
+
+            if (!primaryMatch && fallbackMatch) {
+              console.warn('⚠️ Old commission format detected:', {
+                entryId: e.entryId,
+                driverId: e.driverId
+              });
+            }
+
+            return primaryMatch || fallbackMatch;
+          });
 
           driver.totalEntries = driverEntries.length;
           if (driverEntries.length > 0) {
@@ -158,7 +169,7 @@ export class AllDriver {
   }
   getAllCommissionEntries() {
     this.http
-      .get<any>('http://localhost:5000/api/admin/get-driver-commision-entries', {
+      .get<any>('https://hotel-api.duckdns.org/api/admin/get-driver-commision-entries', {
         headers: this.getHeaders(),
       })
       .subscribe({
@@ -172,9 +183,26 @@ export class AllDriver {
 
   calculateDriverEntries() {
     this.drivers.forEach((driver) => {
-      const entries = this.allEntries.filter(
-        (e) => e.driverId === driver._id
-      );
+      // 🔥 Defensive filtering: Handle both MongoDB ObjectId AND driver codes
+      const entries = this.allEntries.filter((e) => {
+        // Primary check: driverId matches MongoDB _id (correct format)
+        const primaryMatch = e.driverId === driver._id;
+
+        // Fallback check: driverId might contain driver code in old records
+        const fallbackMatch = e.driverId === driver.driverId;
+
+        // 🚨 Log warning if fallback is used (indicates old/wrong data)
+        if (!primaryMatch && fallbackMatch) {
+          console.warn('⚠️ Found commission entry with driver code instead of ObjectId:', {
+            entryId: e.entryId,
+            driverId: e.driverId,
+            expectedObjectId: driver._id,
+            driverCode: driver.driverId
+          });
+        }
+
+        return primaryMatch || fallbackMatch;
+      });
 
       driver.totalEntries = entries.length;
       driver.entries = entries; // ✅ Store all entries for this driver

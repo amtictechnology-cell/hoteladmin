@@ -1,51 +1,116 @@
-<div class="top-bar">
-  <h3 style="margin-top: 14px;">Regular Customer</h3>
-  <button class="add-btn" (click)="openModal()">+ Add Customer</button>
-</div>
-
-
-<!-- 🔴 MODAL -->
-<div class="modal-backdrop" *ngIf="showModal">
-  <div class="modal-box">
-
-    <h3>{{ isEditMode ? 'Edit Customer' : 'Add Customer' }}</h3>
-
-    <!-- INPUT 1 -->
-    <input type="text" placeholder="Customer Name" [(ngModel)]="customer.name">
-
-    <!-- INPUT 2 -->
-    <input type="text" placeholder="Mobile Number" [(ngModel)]="customer.mobile">
-
-    <input type="text" placeholder="City" [(ngModel)]="customer.city">
-
-    <div class="btns">
-      <button class="save-btn" (click)="isEditMode ? updateCustomer() : addCustomer()">
-        {{ isEditMode ? 'Update' : 'Save' }}
-      </button>
-      <button class="cancel-btn" (click)="closeModal()">Cancel</button>
+<div class="pc-dashboard">
+  <!-- HEADER BAR -->
+  <div class="header-section">
+    <div class="stats-card">
+      <div class="stats-icon">👥</div>
+      <div class="stats-info">
+        <span class="stats-label">Regular Customers</span>
+        <span class="stats-value">{{ customers.length }}</span>
+      </div>
     </div>
 
+    <div class="action-bar">
+      <button class="primary-btn" (click)="openModal()">
+        <span class="btn-icon">+</span> Add Customer
+      </button>
+    </div>
+  </div>
+
+  <!-- CUSTOMER LIST -->
+  <div class="list-container card-shadow">
+    <table class="modern-table">
+      <thead>
+        <tr>
+          <th>Customer Name</th>
+          <th>Mobile Number</th>
+          <th>City / Location</th>
+          <th class="text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody *ngIf="customers.length > 0">
+        <tr *ngFor="let c of customers">
+          <td>
+            <div class="user-info">
+              <div class="user-avatar">{{ c.name.charAt(0).toUpperCase() }}</div>
+              <span class="user-name">{{ c.name }}</span>
+            </div>
+          </td>
+          <td>
+            <span class="mobile-tag">📱 {{ c.mobile }}</span>
+          </td>
+          <td>
+            <span class="city-text">📍 {{ c.city || 'N/A' }}</span>
+          </td>
+          <td class="text-center">
+            <div class="action-btns">
+              <button class="icon-btn profile" (click)="openProfile(c)" title="View Ledger/Profile">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </button>
+              <button class="icon-btn edit" (click)="editCustomer(c)" title="Edit Profile">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- EMPTY STATE -->
+    <div class="empty-state" *ngIf="customers.length === 0">
+      <div class="empty-icon">👥</div>
+      <h3>No Customers Found</h3>
+      <p>You haven't added any regular customers yet.</p>
+    </div>
   </div>
 </div>
 
-<hr>
+<!-- ADD / EDIT CUSTOMER MODAL -->
+<div class="modal-overlay" *ngIf="showModal" (click)="$event.target === $event.currentTarget && closeModal()">
+  <div class="professional-modal card-shadow">
+    <div class="modal-header">
+      <h3>{{ isEditMode ? 'Edit Customer' : 'Add New Customer' }}</h3>
+      <button class="close-btn" (click)="closeModal()">&times;</button>
+    </div>
 
-<table border="1" width="100%" class="list">
-  <tr>
-    <th>Name</th>
-    <th>Mobile</th>
-    <th>City</th>
-    <th>Action</th>
-  </tr>
+    <div class="modal-body">
+      <div class="form-group">
+        <input type="text" id="custName" [(ngModel)]="customer.name" required placeholder=" " />
+        <label for="custName">Full Name</label>
+        <div class="focus-border"></div>
+      </div>
 
-  <!-- 🔴 ngFor -->
-  <tr *ngFor="let c of customers; let i = index">
-    <td>{{ c.name }}</td>
-    <td>{{ c.mobile }}</td>
-    <td>{{ c.city || '-' }}</td>
-    <td>
-      <button class="profile-btn" (click)="openProfile(c)">Profile</button>
-      <button class="edit-btn" (click)="editCustomer(c)">Edit</button>
-    </td>
-  </tr>
-</table>
+      <div class="form-group">
+        <input type="text" id="custMobile" [(ngModel)]="customer.mobile" required placeholder=" " />
+        <label for="custMobile">Mobile Number</label>
+        <div class="focus-border"></div>
+      </div>
+
+      <div class="form-group">
+        <input type="text" id="custCity" [(ngModel)]="customer.city" required placeholder=" " />
+        <label for="custCity">City / Location</label>
+        <div class="focus-border"></div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn-primary" (click)="isEditMode ? updateCustomer() : addCustomer()" [disabled]="isProcessing">
+        {{ isProcessing ? 'Saving...' : (isEditMode ? 'Update Profile' : 'Add Customer') }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ✅ TOAST NOTIFICATION -->
+<div class="toast-container" [class.show]="toast.show" [ngClass]="toast.type">
+  <div class="toast-content">
+    <span class="toast-icon">{{ toast.type === 'success' ? '✅' : '❌' }}</span>
+    <span class="toast-message">{{ toast.message }}</span>
+  </div>
+</div>

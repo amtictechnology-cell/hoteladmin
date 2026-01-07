@@ -13,7 +13,7 @@ export class LoginComponent implements OnInit {
   loading = false;
   errorMsg: string | null = null;
 
-  private API_URL = 'Http://localhost:5000/api/admin/login';
+  private API_URL = 'https://hotel-api.duckdns.org/api/admin/login';
 
   constructor(
     private fb: FormBuilder,

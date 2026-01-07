@@ -1,47 +1,114 @@
-<div class="container">
-
-    <div class="top-bar">
-        <div class="total-box">
-            Total Users: <b>{{ users.length }}</b>
-        </div>
-
-        <div class="right-bar">
-            <input type="text" placeholder="Search by name or mobile" [(ngModel)]="searchTerm" (input)="searchUser()" />
-
-            <button (click)="openModal()">Add User</button>
-        </div>
-    </div>
-
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Mobile</th>
-                <th>City</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr *ngFor="let user of filteredUsers" (click)="openProfile(user)">
-                <td>{{ user.name }}</td>
-                <td>{{ user.mobile }}</td>
-                <td>{{ user.city }}</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-
-    <!-- MODAL -->
-    <div class="modal" *ngIf="showModal">
-        <div class="modal-content">
-            <h3>Add Khatabook User</h3>
-
-            <input type="text" placeholder="Name" [(ngModel)]="name" />
-            <input type="text" placeholder="Mobile" [(ngModel)]="mobile" />
-            <input type="text" placeholder="City" [(ngModel)]="city" />
-
-            <div class="modal-actions">
-                <button (click)="addUser()">Save</button>
-                <button class="cancel" (click)="closeModal()">Cancel</button>
+<div class="khatabook-dashboard">
+    <!-- TOP HEADER BAR -->
+    <div class="header-section">
+        <div class="stats-card">
+            <div class="stats-icon">👥</div>
+            <div class="stats-info">
+                <span class="stats-label">Total Khatabook Users</span>
+                <span class="stats-value">{{ users.length }}</span>
             </div>
         </div>
+
+        <div class="action-bar">
+            <div class="search-wrapper">
+                <span class="search-icon">🔍</span>
+                <input type="text" placeholder="Search by name or mobile..." [(ngModel)]="searchTerm"
+                    (input)="searchUser()" />
+            </div>
+            <button class="primary-btn" (click)="openModal()">
+                <span class="btn-icon">+</span> Add New User
+            </button>
+        </div>
     </div>
+
+    <!-- USER LIST TABLE -->
+    <div class="list-container card-shadow">
+        <table class="modern-table">
+            <thead>
+                <tr>
+                    <th>User Details</th>
+                    <th>Mobile Number</th>
+                    <th>City / Location</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody *ngIf="filteredUsers.length > 0">
+                <tr *ngFor="let user of filteredUsers" (click)="openProfile(user)">
+                    <td>
+                        <div class="user-info">
+                            <div class="user-avatar">{{ user.name.charAt(0).toUpperCase() }}</div>
+                            <span class="user-name">{{ user.name }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="mobile-tag">📱 {{ user.mobile }}</span>
+                    </td>
+                    <td>
+                        <span class="city-text">📍 {{ user.city || 'N/A' }}</span>
+                    </td>
+                    <td class="text-center">
+                        <div class="action-btns">
+                            <button class="icon-btn view" title="View Profile">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- EMPTY STATE -->
+        <div class="empty-state" *ngIf="filteredUsers.length === 0">
+            <div class="empty-icon">📂</div>
+            <h3>No Users Found</h3>
+            <p>We couldn't find any users matching your search criteria.</p>
+        </div>
+    </div>
+</div>
+
+<!-- PROFESSIONAL ADD USER MODAL -->
+<div class="modal-overlay" *ngIf="showModal" (click)="$event.target === $event.currentTarget && closeModal()">
+    <div class="professional-modal card-shadow">
+        <div class="modal-header">
+            <h3>Add New User</h3>
+            <button class="close-btn" (click)="closeModal()">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <div class="form-group">
+                <input type="text" id="userName" [(ngModel)]="name" required placeholder=" " />
+                <label for="userName">Full Name</label>
+                <div class="focus-border"></div>
+            </div>
+
+            <div class="form-group">
+                <input type="text" id="userMobile" [(ngModel)]="mobile" required placeholder=" " />
+                <label for="userMobile">Mobile Number</label>
+                <div class="focus-border"></div>
+            </div>
+
+            <div class="form-group">
+                <input type="text" id="userCity" [(ngModel)]="city" required placeholder=" " />
+                <label for="userCity">City / Location</label>
+                <div class="focus-border"></div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-secondary" (click)="closeModal()">Cancel</button>
+            <button class="btn-primary" (click)="addUser()">Add User</button>
+        </div>
+    </div>
+</div>
+
+<!-- ✅ TOAST NOTIFICATION -->
+<div class="toast-container" [class.show]="toast.show" [ngClass]="toast.type">
+    <div class="toast-content">
+        <span class="toast-icon">{{ toast.type === 'success' ? '✅' : '❌' }}</span>
+        <span class="toast-message">{{ toast.message }}</span>
+    </div>
+</div>

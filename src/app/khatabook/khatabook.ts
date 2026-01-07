@@ -12,6 +12,22 @@ export class Khatabook {
   searchTerm = '';
   showModal = false;
 
+  /* ================= TOAST NOTIFICATION ================= */
+  toast = {
+    show: false,
+    message: '',
+    type: 'success' as 'success' | 'error'
+  };
+
+  showToast(msg: string, type: 'success' | 'error' = 'success', duration: number = 2000) {
+    this.toast.message = msg;
+    this.toast.type = type;
+    this.toast.show = true;
+    setTimeout(() => {
+      this.toast.show = false;
+    }, duration);
+  }
+
   // form fields
   name = '';
   mobile = '';
@@ -31,7 +47,7 @@ export class Khatabook {
     });
 
     this.http.get<any>(
-      'http://localhost:5000/api/admin/get/khatabook/users',
+      'https://hotel-api.duckdns.org/api/admin/get/khatabook/users',
       { headers }
     ).subscribe(res => {
       console.log('Users API Response:', res);
@@ -80,12 +96,18 @@ export class Khatabook {
     };
 
     this.http.post(
-      'http://localhost:5000/api/admin/add/khatabook/user',
+      'https://hotel-api.duckdns.org/api/admin/add/khatabook/user',
       payload,
       { headers }
-    ).subscribe(() => {
-      this.closeModal();
-      this.getUsers();
+    ).subscribe({
+      next: () => {
+        this.showToast('User added successfully', 'success', 1000); // 1-second auto-hide
+        this.closeModal();
+        this.getUsers();
+      },
+      error: (err) => {
+        this.showToast(err.error?.message || 'Failed to add user', 'error');
+      }
     });
   }
 

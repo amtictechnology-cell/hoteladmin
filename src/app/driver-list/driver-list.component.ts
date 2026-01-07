@@ -24,7 +24,7 @@ export class DriverListComponent implements OnInit {
     mobile: '',
     email: '',
     srNumber: '',
-      location: ''
+    location: ''
   };
 
   editDriver: any = {};
@@ -58,7 +58,7 @@ export class DriverListComponent implements OnInit {
   }
 
   getDrivers() {
-    this.http.get<any>('Http://localhost:5000/api/admin/get-drivers',
+    this.http.get<any>('https://hotel-api.duckdns.org/api/admin/get-drivers',
       { headers: this.getHeaders() })
       .subscribe({
         next: (res: any) => {
@@ -83,17 +83,17 @@ export class DriverListComponent implements OnInit {
 
 
   openModal() {
-  this.showModal = true;
+    this.showModal = true;
 
-  if (this.drivers.length > 0) {
-    const maxSr = Math.max(
-      ...this.drivers.map(d => Number(d.srNumber) || 0)
-    );
-    this.newDriver.srNumber = maxSr + 1;
-  } else {
-    this.newDriver.srNumber = 1;
+    if (this.drivers.length > 0) {
+      const maxSr = Math.max(
+        ...this.drivers.map(d => Number(d.srNumber) || 0)
+      );
+      this.newDriver.srNumber = maxSr + 1;
+    } else {
+      this.newDriver.srNumber = 1;
+    }
   }
-}
 
 
   closeModal() {
@@ -107,13 +107,13 @@ export class DriverListComponent implements OnInit {
       return;
     }
 
-    this.http.post('Http://localhost:5000/api/admin/add-driver',
+    this.http.post('https://hotel-api.duckdns.org/api/admin/add-driver',
       this.newDriver, { headers: this.getHeaders() })
       .subscribe({
         next: (res: any) => {
           this.closeModal();
           this.getDrivers();
-            this.showSuccess("Driver added successfully!");
+          this.showSuccess("Driver added successfully!");
         },
         error: (err) => {
           if (err.status === 401) this.logout();
@@ -124,6 +124,14 @@ export class DriverListComponent implements OnInit {
   openEditModal(driver: any) {
     this.editDriver = { ...driver };
     this.editModal = true;
+
+    // 🔍 Debug: Log the driver being edited
+    console.log('📝 Opening edit modal for driver:', {
+      _id: driver._id,
+      driverId: driver.driverId,
+      name: driver.name,
+      location: driver.location || '(empty)'
+    });
   }
 
   closeEditModal() {
@@ -139,6 +147,7 @@ export class DriverListComponent implements OnInit {
 
     // Mobile number validation
     if (!/^\d{10}$/.test(this.editDriver.mobile)) {
+      alert('Mobile number must be exactly 10 digits!');
       return;
     }
 
@@ -148,24 +157,47 @@ export class DriverListComponent implements OnInit {
       mobile: this.editDriver.mobile,
       carNumber: this.editDriver.carNumber,
       srNumber: this.editDriver.srNumber,
-      location: this.editDriver.location
+      location: this.editDriver.location || '' // ✅ Ensure location is included, even if empty
     };
 
+    // 🔍 Debug: Log the exact payload being sent
+    console.log('📤 Sending update payload:', payload);
+    console.log('📍 Location value being sent:', {
+      value: payload.location,
+      type: typeof payload.location,
+      length: payload.location?.length || 0
+    });
+
     this.http.patch(
-      `Http://localhost:5000/api/admin/edit-driver-profile`,
+      `https://hotel-api.duckdns.org/api/admin/edit-driver-profile`,
       payload,
       { headers: this.getHeaders() }
     ).subscribe({
       next: (res: any) => {
+        // 🔍 Debug: Log the backend response
+        console.log('✅ Backend response:', res);
+
+        // 🔥 Check if location was actually updated in response
+        if (res.driver && res.driver.location !== payload.location) {
+          console.warn('⚠️ Location mismatch! Sent:', payload.location, 'Received:', res.driver.location);
+          alert('Warning: Location may not have been updated correctly. Check backend logs.');
+        }
+
         this.closeEditModal();
         this.getDrivers();
-              this.showSuccess("Driver updated successfully!");
+        this.showSuccess("Driver updated successfully!");
 
       },
       error: (err) => {
-        console.log('Error:', err);
+        console.error('❌ Update failed:', err);
+        console.error('Error details:', {
+          status: err.status,
+          message: err.message,
+          error: err.error
+        });
+
         if (err.status === 401) this.logout();
-        else alert('Update failed!');
+        else alert('Update failed! Check console for details.');
       }
     });
   }
@@ -173,12 +205,12 @@ export class DriverListComponent implements OnInit {
     this.router.navigate(['/home/list', driverId]);
   }
   showSuccess(message: string) {
-  this.successMessage = message;
-  this.successPopup = true;
+    this.successMessage = message;
+    this.successPopup = true;
 
-  setTimeout(() => {
-    this.successPopup = false;
-  }, 1500); // 2 seconds
-}
+    setTimeout(() => {
+      this.successPopup = false;
+    }, 1500); // 2 seconds
+  }
 
 }

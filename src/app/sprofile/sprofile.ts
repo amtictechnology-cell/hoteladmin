@@ -72,7 +72,7 @@ export class Sprofile {
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
 
     this.http.get(
-      `http://localhost:5000/api/admin/get/supplier-persons?supplierId=${this.supplierId}`,
+      `https://hotel-api.duckdns.org/api/admin/get/supplier-persons?supplierId=${this.supplierId}`,
       { headers }
     ).subscribe((res: any) => {
       this.supplierData = res.data[0];
@@ -130,7 +130,7 @@ export class Sprofile {
     }
 
     this.http.post(
-      'http://localhost:5000/api/admin/make-supplier-transection',
+      'https://hotel-api.duckdns.org/api/admin/make-supplier-transection',
       formData,
       { headers }
     ).subscribe(() => {
@@ -157,7 +157,7 @@ export class Sprofile {
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
 
     this.http.get(
-      `http://localhost:5000/api/admin/get/supplier-transection?supplierId=${this.supplierId}`,
+      `https://hotel-api.duckdns.org/api/admin/get/supplier-transection?supplierId=${this.supplierId}`,
       { headers }
     ).subscribe((res: any) => {
       const data = res.data;
@@ -228,13 +228,15 @@ export class Sprofile {
     }
 
     if (this.selectedMonth !== '') {
-      taken = taken.filter(t => new Date(t.entryDate).getMonth() === this.selectedMonth);
-      given = given.filter(t => new Date(t.entryDate).getMonth() === this.selectedMonth);
+      const monthNum = Number(this.selectedMonth);
+      taken = taken.filter(t => new Date(t.entryDate).getMonth() === monthNum);
+      given = given.filter(t => new Date(t.entryDate).getMonth() === monthNum);
     }
 
     if (this.selectedYear !== '') {
-      taken = taken.filter(t => new Date(t.entryDate).getFullYear() === this.selectedYear);
-      given = given.filter(t => new Date(t.entryDate).getFullYear() === this.selectedYear);
+      const yearNum = Number(this.selectedYear);
+      taken = taken.filter(t => new Date(t.entryDate).getFullYear() === yearNum);
+      given = given.filter(t => new Date(t.entryDate).getFullYear() === yearNum);
     }
 
     this.takenList = taken;
@@ -315,7 +317,7 @@ export class Sprofile {
 
     this.http.request(
       'DELETE',
-      'http://localhost:5000/api/admin/delete/supplier-transection-entry',
+      'https://hotel-api.duckdns.org/api/admin/delete/supplier-transection-entry',
       {
         body: payload,
         headers

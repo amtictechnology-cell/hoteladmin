@@ -1,65 +1,182 @@
-<div class="container">
-
-  <!-- LEFT: Customer Profile -->
-  <div class="profile-box" *ngIf="customer">
-    <h3>Customer Profile</h3>
-    <p><b>Name:</b> {{ customer.name }}</p>
-    <p><b>Mobile:</b> {{ customer.mobile }}</p>
-    <p><b>City:</b> {{ customer.city }}</p>
-    <p><b>ID:</b> {{ customer.personalCustomerRecordTranId }}</p>
+<div class="profile-dashboard">
+  <!-- TOP HEADER -->
+  <div class="header-section">
+    <button class="back-link" (click)="router.navigate(['/home/pcustomer'])">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Back to Customers
+    </button>
+    <div class="title-area">
+      <h1>Customer Ledger Portfolio</h1>
+      <p>Personal account history & payment tracking</p>
+    </div>
   </div>
 
-  <!-- RIGHT: Entry Form -->
-  <div class="entry-box">
-    <h3>Add Payment Entry</h3>
+  <!-- UPPER SECTION: PROFILE & ADD FORM -->
+  <div class="dashboard-top">
+    <!-- CUSTOMER IDENTITY CARD -->
+    <div class="user-profile-card card-shadow" *ngIf="customer">
+      <div class="user-main">
+        <div class="user-meta">
+          <h2>{{ customer.name }}</h2>
+          <div class="meta-tags">
+            <span class="tag">📱 {{ customer.mobile }}</span>
+            <span class="tag" *ngIf="customer.city">{{ customer.city }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <input type="number" placeholder="Bill Amount" [(ngModel)]="entry.billAmount">
-    <input type="number" placeholder="Amount Paid After Discount" [(ngModel)]="entry.amountPaidAfterDiscount">
-
-    <select [(ngModel)]="entry.paymentMode">
-      <option value="cash">Cash</option>
-      <option value="online">Online</option>
-      <option value="cheque">Cheque</option>
-    </select>
-
-    <input type="file" (change)="onFileSelect($event)">
-
-    <textarea placeholder="Description" [(ngModel)]="entry.description"></textarea>
-
-    <select [(ngModel)]="entry.status">
-      <option value="Pending">Pending</option>
-      <option value="Approved">Approved</option>
-    </select>
-
-    <button (click)="addEntry()">Save Entry</button>
+    <!-- QUICK ADD ENTRY FORM -->
+    <div class="quick-add-card card-shadow">
+      <h3>Add New Payment Entry</h3>
+      <div class="form-grid-mini">
+        <div class="form-group">
+          <input type="number" id="billAmt" [(ngModel)]="entry.billAmount" required placeholder=" " />
+          <label for="billAmt">Bill Amount (₹)</label>
+        </div>
+        <div class="form-group">
+          <input type="number" id="paidAmt" [(ngModel)]="entry.amountPaidAfterDiscount" required placeholder=" " />
+          <label for="paidAmt">Paid Amount (₹)</label>
+        </div>
+        <div class="form-group">
+          <select [(ngModel)]="entry.paymentMode" class="modern-select">
+            <option value="cash">Cash</option>
+            <option value="online">Online</option>
+            <option value="cheque">Cheque</option>
+            <option value="upi">UPI</option>
+            <option value="bank">Bank Transfer</option>
+          </select>
+          <label class="select-label">Payment Mode</label>
+        </div>
+        <div class="form-group full-width">
+          <textarea [(ngModel)]="entry.description" placeholder="Short internal note or description..."></textarea>
+        </div>
+      </div>
+      <button class="primary-btn-full" (click)="addEntry()" [disabled]="isProcessing">
+        {{ isProcessing ? 'Saving...' : 'Confirm Entry' }}
+      </button>
+    </div>
   </div>
 
+  <!-- METRICS GRID -->
+  <div class="metrics-grid">
+    <div class="metric-card bill">
+      <div class="metric-content">
+        <span class="label">Total Billed</span>
+        <span class="value">₹ {{ totalBill | number }}</span>
+      </div>
+    </div>
+    <div class="metric-card paid">
+      <div class="metric-content">
+        <span class="label">Total Received</span>
+        <span class="value">₹ {{ totalPaid | number }}</span>
+      </div>
+    </div>
+    <div class="metric-card balance" [class.pending]="finalBalance > 0">
+      <div class="metric-content">
+        <span class="label">Outstanding Balance</span>
+        <span class="value">₹ {{ finalBalance | number }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIVITY LOG -->
+  <div class="activity-section">
+    <div class="section-header">
+      <h3>Transaction Activity Logs</h3>
+      <span class="count-tag">{{ entries.length }} Records</span>
+    </div>
+
+    <div class="scrolly-list" *ngIf="entries.length > 0">
+      <div class="activity-card" *ngFor="let e of entries">
+        <div class="card-left">
+          <div class="entry-amount">
+            <span class="bill-label">Bill: ₹{{ e.billAmount | number }}</span>
+            <span class="paid-value">Paid: ₹{{ e.amountPaidAfterDiscount | number }}</span>
+          </div>
+          <div class="entry-date">📅 {{ e.createdAt | date:'mediumDate' }}</div>
+        </div>
+        <div class="card-mid">
+          <div class="entry-desc">{{ e.description || 'No description provided' }}</div>
+          <div class="entry-meta">
+            <span class="badge mode">{{ e.paymentMode | uppercase }}</span>
+            <span class="badge status" [class]="e.status.toLowerCase()">{{ e.status }}</span>
+          </div>
+        </div>
+        <div class="card-right">
+          <a *ngIf="e.paymentScreenshoot" [href]="e.paymentScreenshoot" target="_blank" class="view-proof-btn">View
+            Proof</a>
+          <div class="action-btns">
+            <button class="icon-btn edit" (click)="openEditModal(e)" title="Edit Transaction">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EMPTY STATE -->
+    <div class="empty-state" *ngIf="entries.length === 0 && !loadingEntries">
+      <div class="empty-icon">📁</div>
+      <p>No transaction history found for this customer.</p>
+    </div>
+  </div>
 </div>
 
-<!-- ENTRIES LIST -->
-<h3 style="margin-top:20px">Customer Entries</h3>
-<div *ngIf="loadingEntries">Loading...</div>
-<table *ngIf="!loadingEntries && entries.length > 0" border="1" width="100%">
-  <tr>
-    <th>#</th>
-    <th>Bill Amount</th>
-    <th>Paid Amount</th>
-    <th>Payment Mode</th>
-    <th>Status</th>
-    <th>Description</th>
-    <th>Screenshot</th>
-  </tr>
-  <tr *ngFor="let e of entries; let i = index">
-    <td>{{ i + 1 }}</td>
-    <td>{{ e.billAmount }}</td>
-    <td>{{ e.amountPaidAfterDiscount }}</td>
-    <td>{{ e.paymentMode | titlecase }}</td>
-    <td>{{ e.status }}</td>
-    <td>{{ e.description || '-' }}</td>
-    <td>
-      <a *ngIf="e.paymentScreenshoot" [href]="e.paymentScreenshoot" target="_blank">View</a>
-      <span *ngIf="!e.paymentScreenshoot">-</span>
-    </td>
-  </tr>
-</table>
-<div *ngIf="!loadingEntries && entries.length === 0">No entries found</div>
+<!-- EDIT ENTRY MODAL -->
+<div class="modal-overlay" *ngIf="showEditModal" (click)="$event.target === $event.currentTarget && closeEditModal()">
+  <div class="professional-modal card-shadow">
+    <div class="modal-header">
+      <h3>Edit Customer Entry</h3>
+      <button class="close-btn" (click)="closeEditModal()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <input type="number" id="editBill" [(ngModel)]="editForm.billAmount" required placeholder=" " />
+          <label for="editBill">Bill Amount (₹)</label>
+          <div class="focus-border"></div>
+        </div>
+
+        <div class="form-group">
+          <input type="number" id="editPaid" [(ngModel)]="editForm.amountPaidAfterDiscount" required placeholder=" " />
+          <label for="editPaid">Paid Amount (₹)</label>
+          <div class="focus-border"></div>
+        </div>
+
+        <div class="form-group full-width">
+          <select [(ngModel)]="editForm.paymentMode" class="modern-select">
+            <option value="cash">Cash</option>
+            <option value="online">Online</option>
+            <option value="upi">UPI</option>
+            <option value="bank">Bank Transfer</option>
+            <option value="cheque">Cheque</option>
+          </select>
+          <label class="select-label">Payment Mode</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeEditModal()">Cancel</button>
+      <button class="btn-primary" (click)="updateEntry()" [disabled]="isProcessing">
+        {{ isProcessing ? 'Updating...' : 'Update Entry' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ✅ TOAST NOTIFICATION -->
+<div class="toast-container" [class.show]="toast.show" [ngClass]="toast.type">
+  <div class="toast-content">
+    <span class="toast-icon">{{ toast.type === 'success' ? '✅' : '❌' }}</span>
+    <span class="toast-message">{{ toast.message }}</span>
+  </div>
+</div>

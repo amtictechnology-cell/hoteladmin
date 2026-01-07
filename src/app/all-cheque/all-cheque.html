@@ -1,0 +1,84 @@
+<div class="cheque-wrapper">
+
+    <!-- ===== SUMMARY ===== -->
+    <div class="summary-grid">
+        <div class="summary-card taken">
+            <h4>Total Taken</h4>
+            <p>₹ {{ totalTakenCheque | number }}</p>
+             <span>Panding Cheque</span>
+        </div>
+
+        <div class="summary-card given">
+            <h4>Total Given</h4>
+            <p>₹ {{ totalGivenCheque | number }}</p>
+             <span>Clear Cheque</span>
+        </div>
+
+        <div class="summary-card balance">
+            <h4>Final Balance</h4>
+            <p>₹ {{ finalBalance | number }}</p>
+        </div>
+    </div>
+
+    <!-- ===== FILTERS ===== -->
+    <div class="filters">
+        <select [(ngModel)]="selectedBranch" (change)="applyFilters()">
+            <option value="ALL">All Branches</option>
+            <option *ngFor="let b of branches" [value]="b">{{ b }}</option>
+        </select>
+
+        <select [(ngModel)]="selectedMonth" (change)="applyFilters()">
+            <option value="">All Months</option>
+            <option *ngFor="let m of [0,1,2,3,4,5,6,7,8,9,10,11]" [value]="m">
+                {{ m + 1 }} Month
+            </option>
+        </select>
+
+        <select [(ngModel)]="selectedYear" (change)="applyFilters()">
+            <option value="">All Years</option>
+            <option *ngFor="let y of years" [value]="y">{{ y }}</option>
+        </select>
+    </div>
+
+    <!-- ===== LISTS ===== -->
+    <div class="lists-grid">
+
+        <!-- TAKEN LIST -->
+        <div class="list-card taken">
+            <h3>TAKEN CHEQUES</h3>
+
+            <div class="cheque-item" *ngFor="let item of filteredCheques" [hidden]="item.type !== 'TAKEN'">
+
+                <div class="left">
+                    <h4>{{ item.supplierName }}</h4>
+                    <p>{{ item.branch }}</p>
+                    <small>Return: {{ item.returnDate | date:'dd MMM yyyy' }}</small>
+                </div>
+
+                <div class="right">
+                    <span class="amount red">₹ {{ item.amount | number }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- GIVEN LIST -->
+        <div class="list-card given">
+            <h3>GIVEN CHEQUES</h3>
+
+            <div class="cheque-item" *ngFor="let item of filteredCheques" [hidden]="item.type !== 'GIVEN'">
+
+                <div class="left">
+                    <h4>{{ item.supplierName }}</h4>
+                    <p>{{ item.branch }}</p>
+                    <small>Return: {{ item.returnDate | date:'dd MMM yyyy' }}</small>
+                </div>
+
+                <div class="right">
+                    <span class="amount green">₹ {{ item.amount | number }}</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>

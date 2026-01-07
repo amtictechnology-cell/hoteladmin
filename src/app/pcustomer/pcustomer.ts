@@ -19,9 +19,26 @@ export class Pcustomer implements OnInit {
     personalCustomerRecordTranId: '' // required for update
   };
 
+  /* ================= TOAST NOTIFICATION ================= */
+  toast = {
+    show: false,
+    message: '',
+    type: 'success' as 'success' | 'error'
+  };
+
+  showToast(msg: string, type: 'success' | 'error' = 'success', duration: number = 2000) {
+    this.toast.message = msg;
+    this.toast.type = type;
+    this.toast.show = true;
+    setTimeout(() => {
+      this.toast.show = false;
+    }, duration);
+  }
+
+  isProcessing = false;
   customers: any[] = [];
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router) { }
 
   ngOnInit() {
     this.getAllCustomers();
@@ -42,29 +59,35 @@ export class Pcustomer implements OnInit {
   // ✅ ADD CUSTOMER
   addCustomer() {
     const token = localStorage.getItem('token');
-    const headers = { Authorization: `Bearer ${token}` };
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
 
+    this.isProcessing = true;
     this.http.post(
-      'http://localhost:5000/api/admin/add/personal/customer',
+      'https://hotel-api.duckdns.org/api/admin/add/personal/customer',
       this.customer,
       { headers }
     ).subscribe({
       next: () => {
-        alert('Customer Added Successfully');
+        this.showToast('Customer Added Successfully', 'success', 1000);
         this.closeModal();
         this.getAllCustomers();
+        this.isProcessing = false;
       },
-      error: err => console.error(err)
+      error: err => {
+        console.error(err);
+        this.showToast(err.error?.message || 'Error adding customer', 'error');
+        this.isProcessing = false;
+      }
     });
   }
 
   // ✅ GET ALL CUSTOMERS
   getAllCustomers() {
     const token = localStorage.getItem('token');
-    const headers = { Authorization: `Bearer ${token}` };
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
 
     this.http.get(
-      'http://localhost:5000/api/admin/get/personal/customer/users',
+      'https://hotel-api.duckdns.org/api/admin/get/personal/customer/users',
       { headers }
     ).subscribe((res: any) => {
       this.customers = res?.data || res;
@@ -87,7 +110,7 @@ export class Pcustomer implements OnInit {
   // 🔹 UPDATE CUSTOMER (PATCH)
   updateCustomer() {
     if (!this.customer.personalCustomerRecordTranId) {
-      alert('Customer ID missing!');
+      this.showToast('Customer ID missing!', 'error');
       return;
     }
 
@@ -99,19 +122,25 @@ export class Pcustomer implements OnInit {
     };
 
     const token = localStorage.getItem('token');
-    const headers = { Authorization: `Bearer ${token}` };
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
 
+    this.isProcessing = true;
     this.http.patch(
-      'http://localhost:5000/api/admin/update/personal/customer/profile',
+      'https://hotel-api.duckdns.org/api/admin/update/personal/customer/profile',
       payload,
       { headers }
     ).subscribe({
       next: () => {
-        alert('Customer Updated Successfully');
+        this.showToast('Customer Updated Successfully', 'success', 1000);
         this.closeModal();
         this.getAllCustomers();
+        this.isProcessing = false;
       },
-      error: err => console.error(err)
+      error: err => {
+        console.error(err);
+        this.showToast(err.error?.message || 'Error updating customer', 'error');
+        this.isProcessing = false;
+      }
     });
   }
 }

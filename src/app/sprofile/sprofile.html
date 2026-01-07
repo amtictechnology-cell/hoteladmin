@@ -66,32 +66,85 @@
 </div>
 
 <div class="form-overlay" *ngIf="showForm">
-  <div class="form-box">
-    <h3 *ngIf="formType === 'taken'">Take From {{ supplierData.supplierName }}</h3>
-    <h3 *ngIf="formType === 'given'">Give To {{ supplierData.supplierName }}</h3>
-    <input type="number" placeholder="Amount" [(ngModel)]="transaction.amount">
-    <input type="text" placeholder="Description" [(ngModel)]="transaction.discription">
-    <input type="number" placeholder="Bill No" [(ngModel)]="transaction.billno">
-    <select [(ngModel)]="transaction.hotelBranchName">
-      <option value="">Select Branch</option>
-      <option value="Gokulpoora Sikar">Gokulpoora</option>
-      <option value="Sawali">Sawali</option>
-      <option value="Jaipur">Sikar</option>
-    </select>
-    <input type="date" placeholder="Return Date" [(ngModel)]="transaction.returnDate">
-    <input type="date" placeholder="Entry date" [(ngModel)]="transaction.updatedAt">
+  <div class="modern-form-box">
+    <div class="form-header">
+      <h3 *ngIf="formType === 'taken'">📥 Take From {{ supplierData.supplierName }}</h3>
+      <h3 *ngIf="formType === 'given'">📤 Give To {{ supplierData.supplierName }}</h3>
+      <button class="close-icon-btn" (click)="showForm = false">&times;</button>
+    </div>
 
+    <div class="form-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Amount (₹)</label>
+          <div class="input-with-icon">
+            <span class="input-icon">₹</span>
+            <input type="number" placeholder="0.00" [(ngModel)]="transaction.amount">
+          </div>
+        </div>
 
-    <select [(ngModel)]="transaction.paymentMode">
-      <option value="">Select Payment Mode</option>
-      <option value="cash">Cash</option>
-      <option value="online">Online</option>
-    </select>
+        <div class="form-group">
+          <label>Bill Number</label>
+          <div class="input-with-icon">
+            <span class="input-icon">#</span>
+            <input type="number" placeholder="Optional" [(ngModel)]="transaction.billno">
+          </div>
+        </div>
 
-    <input type="file" (change)="onFileSelect($event)">
-    <div class="btn-row">
-      <button class="btn save" (click)="submitTransaction()">Save</button>
-      <button class="btn cancel" (click)="showForm = false">Cancel</button>
+        <div class="form-group full-width">
+          <label>Description</label>
+          <div class="input-with-icon">
+            <span class="input-icon">📝</span>
+            <input type="text" placeholder="What is this for?" [(ngModel)]="transaction.discription">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Hotel Branch</label>
+          <select [(ngModel)]="transaction.hotelBranchName">
+            <option value="">Select Branch</option>
+            <option value="Gokulpoora Sikar">Gokulpoora</option>
+            <option value="Sawali">Sawali</option>
+            <option value="Jaipur">Sikar</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Payment Mode</label>
+          <select [(ngModel)]="transaction.paymentMode">
+            <option value="">Select Mode</option>
+            <option value="cash">💵 Cash</option>
+            <option value="online">💳 Online</option>
+            <option value="cheque">📄 Cheque</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Entry Date</label>
+          <input type="date" [(ngModel)]="transaction.updatedAt">
+        </div>
+
+        <div class="form-group">
+          <label>Return Date</label>
+          <input type="date" [(ngModel)]="transaction.returnDate">
+        </div>
+
+        <div class="form-group full-width">
+          <label>Payment Screenshot</label>
+          <div class="file-input-wrapper">
+            <input type="file" id="fileInput" (change)="onFileSelect($event)" class="file-input">
+            <label for="fileInput" class="file-label">
+              <span class="file-btn">Choose File</span>
+              <span class="file-name">{{ selectedImage ? selectedImage.name : 'No file chosen' }}</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-footer">
+      <button class="btn-cancel-form" (click)="showForm = false">Cancel</button>
+      <button class="btn-save-form" (click)="submitTransaction()">Save Transaction</button>
     </div>
   </div>
 </div>
@@ -99,56 +152,85 @@
 <!-- TRANSACTION LIST -->
 <div class="transaction-row">
   <div class="left-col">
-    <h4>Taken From {{ supplierData.supplierName }}</h4>
-    <div class="tran-card taken-card" *ngFor="let t of takenList">
-      <div class="left-info">
-        <p class="amount">₹ {{ t.Rs }} <span class="mode">{{ t.paymentMode }}</span></p>
-        <p class="date">
-          Entry:
-          {{ t.entryDate | date:'medium' }}
-        </p>
-        <p *ngIf="t.billno">Bill No: {{ t.billno }}</p>
-        <p>Description: {{ t.discription || '-' }}</p>
-        <p>Branch: {{ t.hotelBranchName }}</p>
-        <p class="return" *ngIf="t.returnDate">
-          Return Date:
-          {{ t.returnDate | date:'dd MMM yyyy' }}
-        </p>
-      </div>
-      <div class="right-col">
-        <img *ngIf="t.image" [src]="t.image" class="thumb" (click)="openImage(t.image)">
-      </div>
-      <button class="delete-btn" (click)="confirmDelete(t, 'takenFromAdmin')">
-        Delete
-      </button>
-
+    <div class="col-header">
+      <span class="icon">📥</span>
+      <h4>Taken From {{ supplierData.supplierName }}</h4>
     </div>
+
+    <div class="tran-card taken-card" *ngFor="let t of takenList">
+      <div class="tran-content">
+        <div class="left-info">
+          <p class="amount">₹ {{ t.Rs }} <span class="mode-badge" [ngClass]="t.paymentMode">{{ t.paymentMode }}</span>
+          </p>
+          <p class="date">
+            <span class="icon">📅</span>
+            {{ t.entryDate | date:'dd MMM yyyy, hh:mm a' }}
+          </p>
+          <p class="meta" *ngIf="t.billno"><strong>Bill No:</strong> {{ t.billno }}</p>
+          <p class="meta"><strong>Desc:</strong> {{ t.discription || '-' }}</p>
+          <p class="meta"><strong>Branch:</strong> {{ t.hotelBranchName }}</p>
+          <p class="return-badge" *ngIf="t.returnDate">
+            Return: {{ t.returnDate | date:'dd MMM yyyy' }}
+          </p>
+        </div>
+        <div class="image-col" *ngIf="t.image">
+          <img [src]="t.image" class="thumb-mini" (click)="openImage(t.image)" title="Click to preview">
+        </div>
+      </div>
+      <div class="tran-actions">
+        <button class="icon-delete-btn" (click)="confirmDelete(t, 'takenFromAdmin')" title="Delete Transaction">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            <line x1="10" y1="11" x2="10" y2="17"></line>
+            <line x1="14" y1="11" x2="14" y2="17"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="no-data-msg" *ngIf="takenList.length === 0">No "Taken" records found.</div>
   </div>
 
   <div class="right-col">
-    <h4>Given To {{ supplierData.supplierName }}</h4>
-    <div class="tran-card taken-card" *ngFor="let t of givenList">
-      <div class="left-info">
-        <p class="amount">₹ {{ t.Rs }} <span class="mode">{{ t.paymentMode }}</span></p>
-        <p class="date">
-          Entry:
-          {{ t.entryDate | date:'dd MMM yyyy, hh:mm a' }}
-        </p>
-
-        <p>Description:{{ t.discription || '-' }}</p>
-        <p *ngIf="t.billno">Bill No: {{ t.billno }}</p>
-        <p>Branch:{{ t.hotelBranchName }}</p>
-        <p class="return">Return Date: {{ t.returnDate | date:'dd MMM yyyy' }}</p>
-
-      </div>
-      <div class="right-col">
-        <img *ngIf="t.image" [src]="t.image" class="thumb" (click)="openImage(t.image)">
-      </div>
-      <button class="delete-btn" (click)="confirmDelete(t, 'givenToAdmin')">
-        Delete
-      </button>
-
+    <div class="col-header">
+      <span class="icon">📤</span>
+      <h4>Given To {{ supplierData.supplierName }}</h4>
     </div>
+
+    <div class="tran-card given-card" *ngFor="let t of givenList">
+      <div class="tran-content">
+        <div class="left-info">
+          <p class="amount">₹ {{ t.Rs }} <span class="mode-badge" [ngClass]="t.paymentMode">{{ t.paymentMode }}</span>
+          </p>
+          <p class="date">
+            <span class="icon">📅</span>
+            {{ t.entryDate | date:'dd MMM yyyy, hh:mm a' }}
+          </p>
+          <p class="meta"><strong>Desc:</strong> {{ t.discription || '-' }}</p>
+          <p class="meta" *ngIf="t.billno"><strong>Bill No:</strong> {{ t.billno }}</p>
+          <p class="meta"><strong>Branch:</strong> {{ t.hotelBranchName }}</p>
+          <p class="return-badge" *ngIf="t.returnDate">
+            Return: {{ t.returnDate | date:'dd MMM yyyy' }}
+          </p>
+        </div>
+        <div class="image-col" *ngIf="t.image">
+          <img [src]="t.image" class="thumb-mini" (click)="openImage(t.image)" title="Click to preview">
+        </div>
+      </div>
+      <div class="tran-actions">
+        <button class="icon-delete-btn" (click)="confirmDelete(t, 'givenToAdmin')" title="Delete Transaction">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            <line x1="10" y1="11" x2="10" y2="17"></line>
+            <line x1="14" y1="11" x2="14" y2="17"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="no-data-msg" *ngIf="givenList.length === 0">No "Given" records found.</div>
   </div>
 </div>
 

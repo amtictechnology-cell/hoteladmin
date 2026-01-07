@@ -52,7 +52,7 @@ export class Allattendance {
       Authorization: `Bearer ${token}`
     });
 
-    const url = `Http://localhost:5000/api/admin/attendance/get/staff-att?month=${this.selectedMonth}&year=${this.selectedYear}`;
+    const url = `https://hotel-api.duckdns.org/api/admin/attendance/get/staff-att?month=${this.selectedMonth}&year=${this.selectedYear}`;
 
     this.http.get<any>(url, { headers }).subscribe({
       next: (res: any) => {

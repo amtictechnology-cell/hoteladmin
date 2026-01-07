@@ -59,45 +59,114 @@
 
   <!-- ADD / EDIT MODAL -->
   <div class="modal" *ngIf="showModal">
-    <div class="modal-content">
-      <h3>{{ isEditMode ? 'Edit Staff' : 'Add New Staff' }}</h3>
+    <div class="modal-content enhanced-modal">
+      <div class="modal-header">
+        <h3>{{ isEditMode ? 'Edit Staff Member' : 'Add New Staff Member' }}</h3>
+        <button class="close-modal-btn" (click)="closeModal()">&times;</button>
+      </div>
 
-      <input placeholder="First Name" [(ngModel)]="newStaff.firstName" />
-      <input placeholder="Last Name" [(ngModel)]="newStaff.lastName" />
-      <input placeholder="Mobile" [(ngModel)]="newStaff.mobile" />
-      <input placeholder="Aadhar Number" [(ngModel)]="newStaff.adharNumber" />
-      <input type="date" [(ngModel)]="newStaff.DOB" />
-      <input placeholder="City" [(ngModel)]="newStaff.address.city" />
-      <label>Branch</label>
-      <select [(ngModel)]="newStaff.branchName">
-        <option value="">Select Branch</option>
-        <option value="Gokulpura">Gokulpura</option>
-        <option value="Sikar">Sikar</option>
-        <option value="Sanwali">Sanwali</option>
-      </select>
-      <label>Salary</label>
-      <input type="number" placeholder="Salary" [(ngModel)]="newStaff.salary" />
+      <div class="modal-body">
+        <div class="form-grid">
+          <!-- Basic Info -->
+          <div class="form-section">
+            <h4>Basic Information</h4>
+            <div class="input-group">
+              <label>First Name</label>
+              <input placeholder="Enter First Name" [(ngModel)]="newStaff.firstName" />
+            </div>
+            <div class="input-group">
+              <label>Last Name</label>
+            </div>
+            <input placeholder="Enter Last Name" [(ngModel)]="newStaff.lastName" />
+            <div class="input-group">
+              <label>Mobile Number</label>
+              <input placeholder="Enter Mobile" [(ngModel)]="newStaff.mobile" />
+            </div>
+            <div class="input-group">
+              <label>Aadhar Number</label>
+              <input placeholder="Enter Aadhar" [(ngModel)]="newStaff.adharNumber" />
+            </div>
+          </div>
 
+          <!-- Professional Info -->
+          <div class="form-section">
+            <h4>Professional Details</h4>
+            <div class="input-group">
+              <label>Date of Birth</label>
+              <input type="date" [(ngModel)]="newStaff.DOB" />
+            </div>
+            <div class="input-group">
+              <label>City</label>
+              <input placeholder="Enter City" [(ngModel)]="newStaff.address.city" />
+            </div>
+            <div class="input-group">
+              <label>Branch Name</label>
+              <select [(ngModel)]="newStaff.branchName">
+                <option value="">Select Branch</option>
+                <option value="Gokulpura">Gokulpura</option>
+                <option value="Sikar">Sikar</option>
+                <option value="Sanwali">Sanwali</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Monthly Salary (₹)</label>
+              <input type="number" placeholder="Enter Salary" [(ngModel)]="newStaff.salary" />
+            </div>
+          </div>
+        </div>
 
+        <hr class="divider">
 
-      <!-- Profile Image -->
-      <label>Profile Image</label>
-      <ng-container *ngIf="profileImagePreview">
-        <img [src]="profileImagePreview" class="img-preview">
-      </ng-container>
-      <input type="file" (change)="onProfileImageSelect($event)">
+        <!-- Document Uploads -->
+        <div class="upload-section">
+          <h4>Profile & Documents</h4>
+          <div class="upload-grid">
+            <!-- Profile Photo -->
+            <div class="upload-card">
+              <label>Profile Photo</label>
+              <div class="upload-area" (click)="profileInput.click()">
+                <div class="upload-placeholder" *ngIf="!profileImagePreview">
+                  <span class="upload-icon">👤</span>
+                  <p>Click to Upload</p>
+                </div>
+                <img *ngIf="profileImagePreview" [src]="profileImagePreview" class="preview-img">
+              </div>
+              <input #profileInput type="file" (change)="onProfileImageSelect($event)" hidden accept="image/*">
+            </div>
 
-      <!-- ID Proof Image -->
-      <label>ID Proof Image</label>
-      <ng-container *ngIf="idProofImagePreview">
-        <img [src]="idProofImagePreview" class="img-preview">
-      </ng-container>
-      <input type="file" (change)="onIdProofImageSelect($event)">
+            <!-- ID Front -->
+            <div class="upload-card">
+              <label>ID Proof (Front Side)</label>
+              <div class="upload-area" (click)="idFrontInput.click()">
+                <div class="upload-placeholder" *ngIf="!idProofFrontPreview">
+                  <span class="upload-icon">🆔</span>
+                  <p>Front Side</p>
+                </div>
+                <img *ngIf="idProofFrontPreview" [src]="idProofFrontPreview" class="preview-img">
+              </div>
+              <input #idFrontInput type="file" (change)="onIdProofFrontSelect($event)" hidden accept="image/*">
+            </div>
 
-      <div class="modal-actions">
-        <button *ngIf="!isEditMode" (click)="addStaff()">Save</button>
-        <button *ngIf="isEditMode" (click)="updateStaff()">Update</button>
-        <button (click)="closeModal()">Cancel</button>
+            <!-- ID Back -->
+            <div class="upload-card">
+              <label>ID Proof (Back Side)</label>
+              <div class="upload-area" (click)="idBackInput.click()">
+                <div class="upload-placeholder" *ngIf="!idProofBackPreview">
+                  <span class="upload-icon">🪪</span>
+                  <p>Back Side</p>
+                </div>
+                <img *ngIf="idProofBackPreview" [src]="idProofBackPreview" class="preview-img">
+              </div>
+              <input #idBackInput type="file" (change)="onIdProofBackSelect($event)" hidden accept="image/*">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions enhanced-actions">
+        <button class="cancel-btn" (click)="closeModal()">Cancel</button>
+        <button class="save-btn" *ngIf="!isEditMode" (click)="addStaff()">Save Staff</button>
+        <button class="save-btn" *ngIf="isEditMode" (click)="updateStaff()">Update Staff</button>
       </div>
     </div>
   </div>

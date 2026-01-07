@@ -38,7 +38,7 @@ export class Attendance {
     const token = localStorage.getItem('token');
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
 
-    this.http.get<any>('Http://localhost:5000/api/admin/staff/get-list', { headers })
+    this.http.get<any>('https://hotel-api.duckdns.org/api/admin/staff/get-list', { headers })
       .subscribe({
         next: res => {
           this.staffList = res.staffList.map((staff: any) => ({
@@ -68,7 +68,7 @@ export class Attendance {
     const month = today.getMonth() + 1;
     const year = today.getFullYear();
 
-    const url = `Http://localhost:5000/api/admin/attendance/get/staff-att?month=${month}&year=${year}`;
+    const url = `https://hotel-api.duckdns.org/api/admin/attendance/get/staff-att?month=${month}&year=${year}`;
 
     this.http.get<any>(url, { headers }).subscribe({
       next: res => {
@@ -138,7 +138,7 @@ export class Attendance {
       attendanceDetails: { attendance: mapped }
     };
 
-    this.http.post('Http://localhost:5000/api/admin/attendance/marked-for-staff', payload, { headers })
+    this.http.post('https://hotel-api.duckdns.org/api/admin/attendance/marked-for-staff', payload, { headers })
       .subscribe({
         next: () => {
           this.selectedStaff.attendance = mapped;
@@ -185,7 +185,7 @@ export class Attendance {
       attendance: this.selectedEditAttendance
     };
 
-    this.http.patch('Http://localhost:5000/api/admin/attendance/edit/staff-attendance', payload, { headers })
+    this.http.patch('https://hotel-api.duckdns.org/api/admin/attendance/edit/staff-attendance', payload, { headers })
       .subscribe({
         next: () => {
           this.selectedStaff.attendance = this.selectedEditAttendance;

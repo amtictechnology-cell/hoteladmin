@@ -21,6 +21,36 @@ export class Expensis {
     city: ""
   };
 
+  /* ================= DATE FILTER (EXPENSE ONLY) ================= */
+  selectedExpenseMonth: number | '' = '';
+  selectedExpenseYear: number | '' = '';
+  months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  availableExpenseYears: number[] = [];
+
+  /* ================= CUSTOM DELETE CONFIRMATION ================= */
+  showDeleteModal = false;
+  deleteTarget: any = null;
+  deleteType: 'earnings' | 'expenses' | null = null;
+
+  /* ================= TOAST NOTIFICATION ================= */
+  toast = {
+    show: false,
+    message: '',
+    type: 'success' as 'success' | 'error'
+  };
+
+  showToast(msg: string, type: 'success' | 'error' = 'success') {
+    this.toast.message = msg;
+    this.toast.type = type;
+    this.toast.show = true;
+    setTimeout(() => {
+      this.toast.show = false;
+    }, 2000);
+  }
+
   constructor(private http: HttpClient, private router: Router) { }
 
   ngOnInit() {
@@ -57,7 +87,7 @@ export class Expensis {
     };
   }
   getCustomers() {
-    this.http.get("Http://localhost:5000/api/admin/get/transection-user", this.getHeaders())
+    this.http.get("https://hotel-api.duckdns.org/api/admin/get/transection-user", this.getHeaders())
       .subscribe({
         next: (res: any) => {
           this.customers = res.data || res;
@@ -90,7 +120,7 @@ export class Expensis {
       address: { city: this.form.city }
     };
 
-    this.http.post("Http://localhost:5000/api/admin/create-transection-user", payload, this.getHeaders())
+    this.http.post("https://hotel-api.duckdns.org/api/admin/create-transection-user", payload, this.getHeaders())
       .subscribe({
         next: () => {
           this.closeModal();
@@ -108,6 +138,9 @@ export class Expensis {
 
   totalMonthlyEarnings: number = 0;
   totalMonthlyExpenses: number = 0;
+
+  allHotelExpenses: any[] = []; // Store original list for filtering
+  allHotelEarnings: any[] = []; // Store original list for filtering
 
   showAddExpenseForm: boolean = false;
   showAddEarningForm: boolean = false;
@@ -133,6 +166,34 @@ export class Expensis {
     description: "",
     branch: 'Gokulpura'
   };
+
+  resetExpenseForm() {
+    this.expenseForm = {
+      amount: "",
+      items: "",
+      date: new Date().toISOString().split('T')[0],
+      mode: "cash",
+      billno: "",
+      description: "",
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      branch: this.selectedBranch
+    };
+    this.selectedExpenseImage = null;
+  }
+
+  resetEarningForm() {
+    this.earningForm = {
+      amount: "",
+      details: "",
+      date: new Date().toISOString().split('T')[0],
+      mode: "cash",
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      billno: "",
+      description: "",
+      branch: this.selectedBranch
+    };
+    this.selectedEarningImage = null;
+  }
   selectedEarningImage: File | null = null;
   selectedExpenseImage: File | null = null;
 
@@ -160,26 +221,70 @@ export class Expensis {
   getHotelExpenseReport(branch?: string) {
     const b = branch || this.selectedBranch;
     this.http.get(
-      `Http://localhost:5000/api/admin/get/earning-expense-report?hotelBranchName=${this.selectedBranch}`,
+      `https://hotel-api.duckdns.org/api/admin/get/earning-expense-report?hotelBranchName=${this.selectedBranch}`,
       this.getHeaders()
     ).subscribe({
       next: (res: any) => {
         const data = res.data || {};
-        this.hotelEarnings = (data.earnings || []).map((e: any) => ({
-          ...e,
-          _id: e._id
-        }));
+        this.allHotelEarnings = data.earnings || [];
+        this.allHotelExpenses = data.expenses || [];
 
-        this.hotelExpenses = (data.expenses || []).map((e: any) => ({
-          ...e,
-          _id: e._id
-        }));
-        this.hotelEarnings = data.earnings || [];
-        this.hotelExpenses = data.expenses || [];
-        this.totalMonthlyEarnings = Number(data.totalEarning) || 0;
-        this.totalMonthlyExpenses = Number(data.totalExpense) || 0;
+        // ✅ EXTRACT AVAILABLE YEARS
+        this.extractExpenseYears();
+
+        // ✅ APPLY FILTERS
+        this.applyAllFilters();
       }
     });
+  }
+
+  extractExpenseYears() {
+    // Collect dates from both lists to get all available years
+    const expenseDates = this.allHotelExpenses.map(e => e.earningDate || e.expenseDate);
+    const earningDates = this.allHotelEarnings.map(e => e.earningDate || e.expenseDate);
+    const allDates = [...expenseDates, ...earningDates];
+
+    this.availableExpenseYears = Array.from(
+      new Set(allDates.map(d => d ? new Date(d).getFullYear() : null))
+    ).filter((y): y is number => y !== null && !isNaN(y)).sort((a, b) => b - a);
+  }
+
+  applyAllFilters() {
+    const monthSelected = this.selectedExpenseMonth !== '';
+    const yearSelected = this.selectedExpenseYear !== '';
+
+    const filterFn = (item: any) => {
+      if (!monthSelected && !yearSelected) return true;
+
+      const dateVal = item.earningDate || item.expenseDate;
+      if (!dateVal) return false;
+
+      const d = new Date(dateVal);
+      if (isNaN(d.getTime())) return false;
+
+      const matchMonth = monthSelected ? d.getMonth() === Number(this.selectedExpenseMonth) : true;
+      const matchYear = yearSelected ? d.getFullYear() === Number(this.selectedExpenseYear) : true;
+
+      return matchMonth && matchYear;
+    };
+
+    // Filter both lists
+    this.hotelExpenses = this.allHotelExpenses.filter(filterFn);
+    this.hotelEarnings = this.allHotelEarnings.filter(filterFn);
+
+    // Recalculate Totals based on filtered lists
+    this.totalMonthlyExpenses = this.hotelExpenses.reduce((acc, curr) => acc + (Number(curr.expenseAmount) || 0), 0);
+    this.totalMonthlyEarnings = this.hotelEarnings.reduce((acc, curr) => acc + (Number(curr.earningAmount) || 0), 0);
+  }
+
+  onExpenseFilterChange() {
+    this.applyAllFilters();
+  }
+
+  clearExpenseFilters() {
+    this.selectedExpenseMonth = '';
+    this.selectedExpenseYear = '';
+    this.applyAllFilters();
   }
 
   addExpense() {
@@ -200,7 +305,7 @@ export class Expensis {
     const token = localStorage.getItem('token');
 
     this.http.post(
-      "Http://localhost:5000/api/admin/add/hotel-expense",
+      "https://hotel-api.duckdns.org/api/admin/add/hotel-expense",
       formData,
       {
         headers: {
@@ -210,6 +315,7 @@ export class Expensis {
     ).subscribe({
       next: () => {
         this.showAddExpenseForm = false;
+        this.showToast("Expense added successfully!");
         this.getHotelExpenseReport();
       },
     });
@@ -233,7 +339,7 @@ export class Expensis {
     }
     const token = localStorage.getItem('token');
     this.http.post(
-      "Http://localhost:5000/api/admin/add/hotel-earning",
+      "https://hotel-api.duckdns.org/api/admin/add/hotel-earning",
       formData,
       {
         headers: {
@@ -242,7 +348,7 @@ export class Expensis {
       }
     ).subscribe({
       next: () => {
-        alert("Earning Added!");
+        this.showToast("Earning added successfully!");
         this.showAddEarningForm = false;
         this.getHotelExpenseReport();
       },
@@ -261,7 +367,7 @@ export class Expensis {
 
   // GET SUPPLIERS LIST
   getSuppliers() {
-    this.http.get("Http://localhost:5000/api/admin/get/supplier-persons", this.getHeaders())
+    this.http.get("https://hotel-api.duckdns.org/api/admin/get/supplier-persons", this.getHeaders())
       .subscribe({
         next: (res: any) => {
           if (Array.isArray(res?.data)) {
@@ -311,7 +417,7 @@ export class Expensis {
       supplierPhone: this.supplierForm.supplierPhone
     };
 
-    this.http.post("Http://localhost:5000/api/admin/add/supplier-person", payload, this.getHeaders())
+    this.http.post("https://hotel-api.duckdns.org/api/admin/add/supplier-person", payload, this.getHeaders())
       .subscribe({
         next: () => {
 
@@ -333,15 +439,24 @@ export class Expensis {
     this.showImageModal = false;
   }
 
-  deleteEarningExpense(e: any, type: 'earnings' | 'expenses') {
-
+  confirmDelete(e: any, type: 'earnings' | 'expenses') {
     if (!e || !e._id) {
       alert('Entry ID missing');
       return;
     }
+    this.deleteTarget = e;
+    this.deleteType = type;
+    this.showDeleteModal = true;
+  }
 
-    const confirmDelete = confirm('Are you sure you want to delete this entry?');
-    if (!confirmDelete) return;
+  cancelDelete() {
+    this.showDeleteModal = false;
+    this.deleteTarget = null;
+    this.deleteType = null;
+  }
+
+  executeDelete() {
+    if (!this.deleteTarget || !this.deleteType) return;
 
     const token = localStorage.getItem('token') || '';
     const headers = new HttpHeaders({
@@ -350,27 +465,26 @@ export class Expensis {
     });
 
     const payload = {
-      type: type,
-      objId: e._id
+      type: this.deleteType,
+      objId: this.deleteTarget._id
     };
-
-    console.log('DELETE EARNING/EXPENSE 👉', payload);
 
     this.http.request(
       'DELETE',
-      'http://localhost:5000/api/admin/delete/earning-expense-entry',
+      'https://hotel-api.duckdns.org/api/admin/delete/earning-expense-entry',
       {
         body: payload,
         headers
       }
     ).subscribe({
       next: () => {
-        alert('Deleted successfully');
-        this.getHotelExpenseReport(); // 🔁 refresh
+        this.showToast("Entry deleted successfully!");
+        this.cancelDelete();
+        this.getHotelExpenseReport(); // refresh
       },
       error: (err) => {
-        console.error(err);
-        alert(err.error?.message || 'Delete failed');
+        this.showToast(err.error?.message || 'Delete failed', 'error');
+        this.cancelDelete();
       }
     });
   }

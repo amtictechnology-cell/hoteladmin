@@ -1,142 +1,301 @@
 <div class="profile-page" *ngIf="!loading && staffData">
 
-  <div class="profile-card">
+  <!-- ================= PROFILE HEADER ================= -->
+  <div class="profile-dashboard-header">
 
-    <!-- LEFT IMAGE SECTION -->
-    <div class="profile-left">
-      <img [src]="staffData.profileImage || 'assets/user.png'" alt="Profile Image" />
+    <!-- Identity Sidebar -->
+    <div class="profile-identity">
+      <div class="img-wrapper">
+        <img [src]="staffData.profileImage || 'assets/user.png'" alt="Profile">
+        <div class="status-indicator"></div>
+      </div>
+      <h2 class="staff-name">{{ staffData.firstName }} {{ staffData.lastName }}</h2>
+      <span class="staff-role">{{ staffData.role | titlecase }}</span>
 
-      <h3>{{ staffData.firstName }} {{ staffData.lastName }}</h3>
-      <p class="role">{{ staffData.role | titlecase }}</p>
+      <div class="identity-badges">
+        <div class="badge-item">
+          <span class="label">ID</span>
+          <span class="value">{{ staffData.staffId || 'N/A' }}</span>
+        </div>
+        <div class="badge-item">
+          <span class="label">Joined</span>
+          <span class="value">{{ staffData.createdAt | date:'dd MMM yyyy' }}</span>
+        </div>
+      </div>
     </div>
 
-    <!-- RIGHT DETAILS SECTION -->
-    <div class="profile-right">
-      <div class="row">
-        <span>Mobile</span>
-        <p>{{ staffData.mobile }}</p>
+    <!-- Details Grid -->
+    <div class="profile-details-grid">
+
+      <!-- Section 1: Personal Info -->
+      <div class="detail-section">
+        <h4 class="section-title">👤 Personal Details</h4>
+        <div class="detail-row"><label>Full Name</label>
+          <p>{{ staffData.firstName }} {{ staffData.lastName }}</p>
+        </div>
+        <div class="detail-row"><label>Date of Birth</label>
+          <p>{{ staffData.DOB | date:'dd MMMM yyyy' }}</p>
+        </div>
+        <div class="detail-row"><label>Aadhar Number</label>
+          <p class="highlightable">{{ staffData.adharNumber || '—' }}</p>
+        </div>
       </div>
 
-      <div class="row">
-        <span>Aadhar No</span>
-        <p>{{ staffData.adharNumber }}</p>
+      <!-- Section 2: Contact Info -->
+      <div class="detail-section">
+        <h4 class="section-title">📞 Contact Info</h4>
+        <div class="detail-row"><label>Mobile Number</label>
+          <p class="phone-link">{{ staffData.mobile }}</p>
+        </div>
+        <div class="detail-row"><label>Email Address</label>
+          <p>{{ staffData.email || 'No Email Provided' }}</p>
+        </div>
+        <div class="detail-row"><label>Current City</label>
+          <p>{{ staffData.address?.city || '—' }}</p>
+        </div>
       </div>
 
-      <div class="row">
-        <span>Date of Birth</span>
-        <p>{{ staffData.DOB | date:'dd MMM yyyy' }}</p>
+      <!-- Section 3: Professional Info -->
+      <div class="detail-section">
+        <h4 class="section-title">💼 Employment</h4>
+        <div class="detail-row"><label>Branch Assigned</label>
+          <div class="branch-tag">{{ staffData.branchName || 'Head Office' }}</div>
+        </div>
+        <div class="detail-row"><label>Current Salary</label>
+          <p class="salary-text">₹ {{ staffData.salary | number }}</p>
+        </div>
+        <div class="detail-row"><label>Status</label>
+          <p class="active-status">Active Employee</p>
+        </div>
       </div>
 
-      <div class="row">
-        <span>City</span>
-        <p>{{ staffData.address?.city }}</p>
-      </div>
-
-      <div class="row">
-        <span>Created At</span>
-        <p>{{ staffData.createdAt | date:'dd MMM yyyy, hh:mm a' }}</p>
-      </div>
-      <div class="row">
-        <span>Branch</span>
-        <p>{{ staffData.branchName || 'N/A' }}</p>
-      </div>
-
-      <div class="row">
-        <span>Salary</span>
-        <p>₹ {{ staffData.salary || 0 }}</p>
-      </div>
-
-
-    </div>
-
-    <div class="row">
-      <span>ID Proof</span>
-      <img *ngIf="staffData.IdProofImage" [src]="staffData.IdProofImage" class="id-thumb" alt="ID Proof"
-        (click)="openIdImage()" />
-    </div>
-
-  </div>
-</div>
-
-<!-- ================= ATTENDANCE REGISTER ================= -->
-<div class="attendance-register">
-
-  <!-- Header -->
-  <div class="register-header">
-    <h3>Attendance Register</h3>
-
-    <div class="register-filters">
-      <select (change)="onMonthChange($event)">
-        <option *ngFor="let m of [1,2,3,4,5,6,7,8,9,10,11,12]" [value]="m" [selected]="m === selectedMonth">
-          {{ m }} Month
-        </option>
-      </select>
-
-      <select (change)="onYearChange($event)">
-        <option *ngFor="let y of [2024,2025,2026]" [value]="y" [selected]="y === selectedYear">
-          {{ y }}
-        </option>
-      </select>
     </div>
   </div>
 
-  <!-- ================= REGISTER GRID ================= -->
-  <div class="register-grid">
-
-    <div class="day-box" *ngFor="let d of attendanceDays">
-
-      <!-- DATE -->
-      <div class="date">{{ d.day }}</div>
-
-      <!-- DAY -->
-      <div class="day">
-        {{ (selectedYear + '-' + selectedMonth + '-' + d.day) | date:'EEE' }}
+  <!-- ================= ATTENDANCE REGISTER ================= -->
+  <div class="attendance-register">
+    <div class="register-header">
+      <h3>Attendance Register</h3>
+      <div class="register-filters">
+        <select (change)="onMonthChange($event)">
+          <option *ngFor="let m of [1,2,3,4,5,6,7,8,9,10,11,12]" [value]="m" [selected]="m === selectedMonth">{{ m }}
+            Month</option>
+        </select>
+        <select (change)="onYearChange($event)">
+          <option *ngFor="let y of [2024,2025,2026]" [value]="y" [selected]="y === selectedYear">{{ y }}</option>
+        </select>
       </div>
+    </div>
 
-      <!-- STATUS -->
-      <div class="status" [ngClass]="{
+    <div class="register-grid">
+      <div class="day-box" *ngFor="let d of attendanceDays">
+        <div class="date">{{ d.day }}</div>
+        <div class="day">{{ (selectedYear + '-' + selectedMonth + '-' + d.day) | date:'EEE' }}</div>
+        <div class="status" [ngClass]="{
           present: d.status === 'Present',
           absent: d.status === 'Absent',
           half: d.status === 'HalfDay',
           leave: d.status === 'PaidLeave'
-        }">
-        {{ d.status || '—' }}
+        }">{{ d.status || '—' }}</div>
+        <div class="time">{{ d.time || '--' }}</div>
       </div>
-
-      <!-- TIME -->
-      <div class="time">
-        {{ d.time || '--' }}
-      </div>
-
     </div>
 
+    <div class="register-summary">
+      <div class="sum present">Present: <b>{{ totalPresent }}</b></div>
+      <div class="sum absent">Absent: <b>{{ totalAbsent }}</b></div>
+      <div class="sum half">Half Day: <b>{{ totalHalfDay }}</b></div>
+      <div class="sum leave">Paid Leave: <b>{{ totalPaidLeave }}</b></div>
+    </div>
   </div>
 
-  <!-- ================= TOTAL ================= -->
-  <div class="register-summary">
-    <div class="sum present">Present: <b>{{ totalPresent }}</b></div>
-    <div class="sum absent">Absent: <b>{{ totalAbsent }}</b></div>
-    <div class="sum half">Half Day: <b>{{ totalHalfDay }}</b></div>
-    <div class="sum leave">Paid Leave: <b>{{ totalPaidLeave }}</b></div>
+  <!-- ================= SALARY SUMMARY ================= -->
+  <div class="salary-summary">
+    <h3>Salary Summary ({{ selectedMonth }}/{{ selectedYear }})</h3>
+
+    <div class="salary-row">
+      <span>Monthly Salary</span>
+      <b>₹ {{ monthlySalary | number:'1.0-0' }}</b>
+    </div>
+
+    <div class="salary-row">
+      <span>Per Day Salary</span>
+      <b>₹ {{ perDaySalary | number:'1.2-2' }}</b>
+    </div>
+
+    <div class="salary-row">
+      <span>Attendance Salary</span>
+      <b>₹ {{ calculatedSalary | number:'1.0-0' }}</b>
+    </div>
+
+    <div class="salary-row">
+      <span>Manual Adjustments (Taken - Given)</span>
+      <b>₹ {{ (khatabookData.totalTaken - khatabookData.totalGiven) | number:'1.0-0' }}</b>
+    </div>
+
+    <div class="salary-row total">
+      <span>Final Payable Salary</span>
+      <b>₹ {{ finalPayableSalary | number:'1.0-0' }}</b>
+    </div>
+  </div>
+
+  <!-- ================= KHATABOOK ================= -->
+  <div class="khatabook-section">
+    <div class="khatabook-header">
+      <h3>Staff Khatabook</h3>
+      <div class="khatabook-actions">
+        <button class="btn taken" (click)="openTransactionModal('taken')">Add Taken</button>
+        <button class="btn given" (click)="openTransactionModal('given')">Add Given</button>
+      </div>
+    </div>
+
+    <!-- ================= KHATABOOK SUMMARY WITH ATTENDANCE ================= -->
+    <div class="khatabook-summary" *ngIf="khatabookData">
+      <div class="stat">
+        <span>Total Taken (Including Attendance Salary)</span>
+        <b class="red">
+          ₹ {{
+          ( (khatabookData.totalTaken || 0) + (calculatedSalary || 0) ) | number
+          }}
+        </b>
+      </div>
+      <div class="stat">
+        <span>Total Given</span>
+        <b class="green">₹ {{ khatabookData.totalGiven | number }}</b>
+      </div>
+      <div class="stat balance">
+        <span>Balance</span>
+        <b
+          [ngClass]="((khatabookData.totalTaken + calculatedSalary) - khatabookData.totalGiven) >= 0 ? 'red' : 'green'">
+          ₹ {{ ((khatabookData.totalTaken || 0) + (calculatedSalary || 0) - (khatabookData.totalGiven || 0)) | number }}
+        </b>
+      </div>
+    </div>
+
+    <!-- ================= TRANSACTION LOGS ================= -->
+    <div class="transaction-logs">
+      <h4>Recent Transactions</h4>
+      <div class="logs-container">
+        <!-- Taken Transactions -->
+        <div class="log-item" *ngFor="let item of khatabookData?.takenFromAdmin">
+          <div class="log-info">
+            <span class="type red">TAKEN</span>
+            <span class="date">{{ item.updatedAt | date:'dd MMM, hh:mm a' }}</span>
+          </div>
+          <div class="log-details">
+            <p>{{ item.description || 'No description' }}</p>
+            <b class="red">₹ {{ item.Rs | number }}</b>
+          </div>
+          <button class="btn-delete" (click)="confirmDelete(item, 'takenFromAdmin')">Delete</button>
+        </div>
+
+        <!-- Given Transactions -->
+        <div class="log-item" *ngFor="let item of khatabookData?.givenToAdmin">
+          <div class="log-info">
+            <span class="type green">GIVEN</span>
+            <span class="date">{{ item.updatedAt | date:'dd MMM, hh:mm a' }}</span>
+          </div>
+          <div class="log-details">
+            <p>{{ item.description || 'No description' }}</p>
+            <b class="green">₹ {{ item.Rs | number }}</b>
+          </div>
+          <button class="btn-delete" (click)="confirmDelete(item, 'givenToAdmin')">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= ID PROOF SECTION ================= -->
+  <div class="id-proof-section">
+    <h3>ID Proof Documents</h3>
+    <div class="id-grid">
+      <div class="id-card" (click)="openLightbox(staffData.IdProofFront)">
+        <div class="id-card-header"><span>Front Side</span></div>
+        <div class="id-card-body">
+          <img *ngIf="staffData.IdProofFront" [src]="staffData.IdProofFront" class="id-thumb" alt="ID Front" />
+          <div *ngIf="!staffData.IdProofFront" class="no-id">No Image</div>
+        </div>
+      </div>
+      <div class="id-card" (click)="openLightbox(staffData.IdProofBack)">
+        <div class="id-card-header"><span>Back Side</span></div>
+        <div class="id-card-body">
+          <img *ngIf="staffData.IdProofBack" [src]="staffData.IdProofBack" class="id-thumb" alt="ID Back" />
+          <div *ngIf="!staffData.IdProofBack" class="no-id">No Image</div>
+        </div>
+      </div>
+    </div>
   </div>
 
 </div>
-<!-- ================= SALARY SUMMARY ================= -->
-<div class="salary-summary">
-  <h3>Salary Calculation ({{ selectedMonth }}/{{ selectedYear }})</h3>
 
-  <div class="salary-row">
-    <span>Monthly Salary</span>
-    <b>₹ {{ monthlySalary | number:'1.0-0' }}</b>
+<!-- ================= LIGHTBOX MODAL ================= -->
+<div class="lightbox-overlay" *ngIf="showLightbox" (click)="closeLightbox()">
+  <div class="lightbox-container" (click)="$event.stopPropagation()">
+    <button class="lightbox-close" (click)="closeLightbox()">&times;</button>
+    <img [src]="lightboxImage" class="lightbox-img" alt="ID Proof Original" />
+    <div class="lightbox-caption">ID Proof Original View</div>
   </div>
+</div>
 
-  <div class="salary-row">
-    <span>Per Day Salary</span>
-    <b>₹ {{ perDaySalary | number:'1.2-2' }}</b>
-  </div>
+<!-- ================= TRANSACTION MODAL ================= -->
+<div class="modal-overlay" *ngIf="showTransactionModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Add {{ transactionType | titlecase }} Transaction</h3>
+      <button class="close-modal" (click)="showTransactionModal = false">&times;</button>
+    </div>
 
-  <div class="salary-row total">
-    <span>Payable Salary</span>
-    <b>₹ {{ calculatedSalary | number:'1.0-0' }}</b>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Amount (₹)</label>
+        <input type="number" [(ngModel)]="transactionForm.Rs" placeholder="0.00">
+      </div>
+
+      <div class="form-group">
+        <label>Payment Mode</label>
+        <select [(ngModel)]="transactionForm.paymentMode">
+          <option value="cash">Cash</option>
+          <option value="online">Online</option>
+          <option value="cheque">Cheque</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea [(ngModel)]="transactionForm.description" placeholder="Enter details..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Payment Screenshot (Optional)</label>
+        <div class="file-input-wrapper">
+          <input type="file" (change)="onFileSelected($event)">
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="showTransactionModal = false">Cancel</button>
+      <button class="btn-primary" (click)="addTransaction()">Complete Transaction</button>
+    </div>
   </div>
+</div>
+
+<!-- ================= DELETE CONFIRMATION MODAL ================= -->
+<div class="modal-overlay" *ngIf="showDeleteModal">
+  <div class="modal-content delete-modal-box">
+    <div class="warn-icon">⚠️</div>
+    <h3>Delete entry?</h3>
+    <p>This will remove the transaction of ₹{{ itemToDelete?.Rs | number }} permanently.</p>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="cancelDelete()">Go Back</button>
+      <button class="btn-danger" (click)="deleteTransaction()">Delete Permanent</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= TOAST ================= -->
+<div class="toast" *ngIf="showToast" [ngClass]="toastType">
+  <span class="toast-icon" *ngIf="toastType === 'success'">✓</span>
+  <span class="toast-icon" *ngIf="toastType === 'error'">✕</span>
+  {{ toastMessage }}
 </div>

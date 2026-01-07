@@ -104,7 +104,7 @@ export class Cprofile implements OnInit {
   /* ================= TRANSACTIONS ================= */
   getTransactionRecord() {
     this.http.get(
-      `http://localhost:5000/api/admin/get/transection-record?transectionUserId=${this.id}`,
+      `https://hotel-api.duckdns.org/api/admin/get/transection-record?transectionUserId=${this.id}`,
       this.getHeaders()
     ).subscribe((res: any) => {
 
@@ -146,7 +146,7 @@ export class Cprofile implements OnInit {
   /* ================= CUSTOMER ================= */
   getCustomer() {
     this.http.get(
-      `http://localhost:5000/api/admin/get/transection-user?transectionUserId=${this.id}`,
+      `https://hotel-api.duckdns.org/api/admin/get/transection-user?transectionUserId=${this.id}`,
       this.getHeaders()
     ).subscribe((res: any) => {
       this.customer = res.data?.[0] || null;
@@ -279,7 +279,7 @@ export class Cprofile implements OnInit {
     }
 
     this.http.post(
-      'http://localhost:5000/api/admin/make-transection',
+      'https://hotel-api.duckdns.org/api/admin/make-transection',
       formData,
       this.getHeaders()
     ).subscribe({
@@ -318,7 +318,7 @@ export class Cprofile implements OnInit {
     console.log('DELETE PAYLOAD 👉', payload);
 
     this.http.delete(
-      'http://localhost:5000/api/admin/delete/transection-user-entry',
+      'https://hotel-api.duckdns.org/api/admin/delete/transection-user-entry',
       {
         ...this.getHeaders(),
         body: payload

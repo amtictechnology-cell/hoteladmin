@@ -9,8 +9,8 @@
         <div class="driver-name">{{ driver.name }}</div>
         <div class="driver-details">
           <div>Car: {{ driver.carNumber }}</div>
-          <div>Mobile: {{ driver.mobile }}</div>  
-            <div *ngIf="driver.location">Location: {{ driver.location }}</div>
+          <div>Mobile: {{ driver.mobile }}</div>
+          <div *ngIf="driver.location">Location: {{ driver.location }}</div>
         </div>
 
         <!-- Edit button -->
@@ -36,28 +36,32 @@
   <div class="modal-content">
     <h3>Add Driver</h3>
     <form (ngSubmit)="addDriver()">
+
       <label>Name:</label>
-      <input type="text" [(ngModel)]="newDriver.name" name="name" required />
+      <input type="text" [(ngModel)]="newDriver.name" name="name" required #nameInput
+        (keydown.enter)="$event.preventDefault(); carInput.focus()" />
 
       <label>Car Number:</label>
-      <input type="text" [(ngModel)]="newDriver.carNumber" name="carNumber" required
-        (input)="newDriver.carNumber = newDriver.carNumber.toUpperCase()" />
+      <input type="text" [(ngModel)]="newDriver.carNumber" name="carNumber" required #carInput
+        (input)="newDriver.carNumber = newDriver.carNumber.toUpperCase()"
+        (keydown.enter)="$event.preventDefault(); mobileInput.focus()" />
 
       <label>Mobile:</label>
       <input type="text" [(ngModel)]="newDriver.mobile" name="mobile" required maxlength="10" minlength="10"
-        pattern="[0-9]{10}" />
+        pattern="[0-9]{10}" #mobileInput (keydown.enter)="$event.preventDefault(); locationInput.focus()" />
 
-  <label>Location:</label>
-<input type="text" [(ngModel)]="newDriver.location" name="location" required />
-
-
+      <label>Location:</label>
+      <input type="text" [(ngModel)]="newDriver.location" name="location" required #locationInput
+        (keydown.enter)="$event.preventDefault(); saveBtn.focus()" />
 
       <label>SR Number:</label>
       <input type="text" [(ngModel)]="newDriver.srNumber" name="srNumber" readonly />
 
-      <button type="submit">Save</button>
+      <button type="submit" #saveBtn>Save</button>
       <button type="button" (click)="closeModal()">Cancel</button>
+
     </form>
+
   </div>
 </div>
 
@@ -77,8 +81,9 @@
       <label>Mobile:</label>
       <input type="text" [(ngModel)]="editDriver.mobile" name="editMobile" required maxlength="10" minlength="10"
         pattern="[0-9]{10}" />
-        <label>Location:</label>
-<input type="text" [(ngModel)]="editDriver.location" name="editLocation" required />
+      <label>Location:</label>
+      <input type="text" [(ngModel)]="editDriver.location" name="editLocation"
+        placeholder="Enter location (optional)" />
 
 
       <label>SR Number:</label>

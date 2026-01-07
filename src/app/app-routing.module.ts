@@ -17,6 +17,8 @@ import { Khatabook } from './khatabook/khatabook';
 import { Khatabookprofile } from './khatabookprofile/khatabookprofile';
 import { Pcustomer } from './pcustomer/pcustomer';
 import { Pcprofile } from './pcprofile/pcprofile';
+import { AllCheque } from './all-cheque/all-cheque';
+import { Logout } from './logout/logout';
 
 
 
@@ -42,7 +44,9 @@ const routes: Routes = [
       { path: 'khatabook', component: Khatabook },
       { path: 'khatabookprofile/:id', component: Khatabookprofile },
       { path: 'pcustomer', component: Pcustomer },
-      { path: 'pcprofile/:id', component: Pcprofile }
+      { path: 'pcprofile/:id', component: Pcprofile },
+      { path: 'all-cheque', component: AllCheque },
+      { path: 'logout', component: Logout }
 
     ]
   }

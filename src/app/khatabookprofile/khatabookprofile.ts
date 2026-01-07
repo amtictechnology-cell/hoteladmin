@@ -15,6 +15,39 @@ export class Khatabookprofile {
   showModal = false;
   transactionType: 'taken' | 'given' = 'taken';
 
+  /* ================= TOAST NOTIFICATION ================= */
+  toast = {
+    show: false,
+    message: '',
+    type: 'success' as 'success' | 'error'
+  };
+
+  showToast(msg: string, type: 'success' | 'error' = 'success', duration: number = 2000) {
+    this.toast.message = msg;
+    this.toast.type = type;
+    this.toast.show = true;
+    setTimeout(() => {
+      this.toast.show = false;
+    }, duration);
+  }
+
+  /* ================= CUSTOM DELETE CONFIRMATION ================= */
+  showDeleteModal = false;
+  deleteTarget: any = null;
+  deleteTargetType: 'taken' | 'given' | null = null;
+
+  confirmDelete(type: 'taken' | 'given', item: any) {
+    this.deleteTarget = item;
+    this.deleteTargetType = type;
+    this.showDeleteModal = true;
+  }
+
+  cancelDelete() {
+    this.showDeleteModal = false;
+    this.deleteTarget = null;
+    this.deleteTargetType = null;
+  }
+
   branchName = ''; // Selected branch
   branchList = ['Gokulpurabranch', 'Sikarbranch', 'Sanwalibranch']; // All available branches
 
@@ -67,7 +100,7 @@ export class Khatabookprofile {
       Authorization: `Bearer ${token}`
     });
 
-    const apiUrl = 'http://localhost:5000/api/admin/get/khatabook/users';
+    const apiUrl = 'https://hotel-api.duckdns.org/api/admin/get/khatabook/users';
     this.http.get<any>(apiUrl, { headers }).subscribe({
       next: (res) => {
         const allUsers = res.data || res;
@@ -134,13 +167,50 @@ export class Khatabookprofile {
     }
 
     this.http.post(
-      'http://localhost:5000/api/admin/add/khatabook/transection',
+      'https://hotel-api.duckdns.org/api/admin/add/khatabook/transection',
       formData,
       { headers }
     ).subscribe({
       next: () => {
+        this.showToast('Transaction saved successfully');
         this.closeModal();
         this.getTransactions();
+      },
+      error: (err) => {
+        this.showToast(err.error?.message || 'Failed to save transaction', 'error');
+        console.error(err);
+      }
+    });
+  }
+
+  getTransactions() {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
+
+    this.http.get<any>(
+      'https://hotel-api.duckdns.org/api/admin/get/khatabook/transection',
+      { headers }
+    ).subscribe({
+      next: (res) => {
+        const record = res.data?.find(
+          (r: any) => r.khatabookUserId === this.userId
+        );
+
+        this.takenList = record?.takenFromAdmin || [];
+        this.givenList = record?.givenToAdmin || [];
+
+        // 🔥 TOTAL CALCULATION
+        this.totalTaken = this.takenList.reduce(
+          (sum: number, t: any) => sum + Number(t.Rs || 0), 0
+        );
+
+        this.totalGiven = this.givenList.reduce(
+          (sum: number, g: any) => sum + Number(g.Rs || 0), 0
+        );
+
+        this.finalBalance = this.totalTaken - this.totalGiven;
       },
       error: (err) => {
         console.error(err);
@@ -148,45 +218,8 @@ export class Khatabookprofile {
     });
   }
 
- getTransactions() {
-  const token = localStorage.getItem('token');
-  const headers = new HttpHeaders({
-    Authorization: `Bearer ${token}`
-  });
-
-  this.http.get<any>(
-    'http://localhost:5000/api/admin/get/khatabook/transection',
-    { headers }
-  ).subscribe({
-    next: (res) => {
-      const record = res.data?.find(
-        (r: any) => r.khatabookUserId === this.userId
-      );
-
-      this.takenList = record?.takenFromAdmin || [];
-      this.givenList = record?.givenToAdmin || [];
-
-      // 🔥 TOTAL CALCULATION
-      this.totalTaken = this.takenList.reduce(
-        (sum: number, t: any) => sum + Number(t.Rs || 0), 0
-      );
-
-      this.totalGiven = this.givenList.reduce(
-        (sum: number, g: any) => sum + Number(g.Rs || 0), 0
-      );
-
-      this.finalBalance = this.totalTaken - this.totalGiven;
-    },
-    error: (err) => {
-      console.error(err);
-    }
-  });
-}
-
-  deleteTransaction(type: 'taken' | 'given', objId: string) {
-    if (!confirm('Are you sure you want to delete this transaction?')) {
-      return;
-    }
+  executeDelete() {
+    if (!this.deleteTarget || !this.deleteTargetType) return;
 
     const token = localStorage.getItem('token');
     const headers = new HttpHeaders({
@@ -195,21 +228,23 @@ export class Khatabookprofile {
 
     const payload = {
       khatabookUserId: this.userId!,
-      objId,
-      type: type === 'taken' ? 'takenFromAdmin' : 'givenToAdmin'
+      objId: this.deleteTarget._id,
+      type: this.deleteTargetType === 'taken' ? 'takenFromAdmin' : 'givenToAdmin'
     };
 
     this.http.delete(
-      'http://localhost:5000/api/admin/delete/khatabook/transection-entry',
+      'https://hotel-api.duckdns.org/api/admin/delete/khatabook/transection-entry',
       { headers, body: payload }
     ).subscribe({
       next: (res) => {
-        alert('Transaction deleted successfully');
+        this.showToast('Transaction deleted successfully');
+        this.cancelDelete();
         this.getTransactions(); // Refresh the list
       },
       error: (err) => {
         console.error('Delete transaction error:', err);
-        alert('Failed to delete transaction');
+        this.showToast('Failed to delete transaction', 'error');
+        this.cancelDelete();
       }
     });
   }

@@ -1,0 +1,65 @@
+.logout-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100%;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logout-box {
+  background: #fff;
+  width: 350px;
+  padding: 30px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.logout-icon {
+  font-size: 50px;
+  color: #3f0600;
+  margin-bottom: 15px;
+}
+
+.logout-box h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.logout-box p {
+  color: #777;
+  margin: 10px 0 20px;
+}
+
+.btn-group {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cancel-btn {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  background: #f1f1f1;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.logout-btn {
+  flex: 1;
+  padding: 10px;
+  background: #3a0600;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background: #c0392b;
+}

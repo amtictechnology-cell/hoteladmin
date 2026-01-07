@@ -1,104 +1,213 @@
-<div class="profile-container">
-   <div class="header">
-      <button class="back-btn" (click)="goBack()">← Back to Users</button>
-      <h2>Khatabook User Profile</h2>
+<div class="profile-dashboard">
+   <!-- TOP HEADER -->
+   <div class="header-section">
+      <button class="back-link" (click)="goBack()">
+         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+         </svg>
+         Back to Users
+      </button>
+      <div class="title-area">
+         <h1>User Transaction Portfolio</h1>
+         <p>Financial history and balance overview</p>
+      </div>
    </div>
 
-   <div *ngIf="isLoading" class="loading">
-      <p>Loading user profile...</p>
+   <!-- USER IDENTITY CARD -->
+   <div class="user-profile-card card-shadow" *ngIf="userProfile && !isLoading">
+      <div class="user-main">
+         <!-- <div class="avatar-large">{{ (userProfile.name?.charAt(0) || 'U').toUpperCase() }}</div> -->
+         <div class="user-meta">
+            <h2>{{ userProfile.name }}</h2>
+            <div class="meta-tags">
+               <span class="tag">📱 {{ userProfile.mobile }}</span>
+               <span class="tag" *ngIf="userProfile.city"> {{ userProfile.city }}</span>
+            </div>
+         </div>
+      </div>
+      <div class="profile-actions">
+         <button class="action-btn taken" (click)="openTransactionModal('taken')">
+            <span class="btn-icon">↑</span> Taken From Admin
+         </button>
+         <button class="action-btn given" (click)="openTransactionModal('given')">
+            <span class="btn-icon">↓</span> Given To Admin
+         </button>
+      </div>
    </div>
 
-   <div *ngIf="errorMessage && !isLoading" class="error">
+   <!-- METRICS GRID -->
+   <div class="metrics-grid">
+      <div class="metric-card taken">
+         <!-- <div class="metric-icon">💸</div> -->
+         <div class="metric-content">
+            <span class="label">Total Taken</span>
+            <span class="value">₹ {{ totalTaken | number }}</span>
+         </div>
+      </div>
+      <div class="metric-card given">
+         <!-- <div class="metric-icon">💰</div> -->
+         <div class="metric-content">
+            <span class="label">Total Given</span>
+            <span class="value">₹ {{ totalGiven | number }}</span>
+         </div>
+      </div>
+      <div class="metric-card balance" [class.negative]="finalBalance < 0" [class.positive]="finalBalance > 0">
+         <!-- <div class="metric-icon">⚖️</div> -->
+         <div class="metric-content">
+            <span class="label">Net Balance</span>
+            <span class="value">₹ {{ finalBalance | number }}</span>
+         </div>
+      </div>
+   </div>
+
+   <!-- LOADING / ERROR STATES -->
+   <div *ngIf="isLoading" class="state-overlay">
+      <div class="spinner"></div>
+      <p>Loading Profile Data...</p>
+   </div>
+
+   <div *ngIf="errorMessage && !isLoading" class="state-overlay error">
+      <div class="error-icon">⚠️</div>
       <p>{{ errorMessage }}</p>
-      <button (click)="goBack()">Return to Users List</button>
+      <button class="retry-btn" (click)="getUserProfile()">Try Again</button>
    </div>
 
-   <div *ngIf="userProfile && !isLoading" class="profile-details">
-      <div class="field">
-         <label>Khatabook User ID:</label>
-         <span>{{ userProfile.khatabookUserId || userId }}</span>
+   <!-- ACTIVITY LOGS -->
+   <div class="activity-columns" *ngIf="!isLoading && userProfile">
+      <!-- TAKEN SECTION -->
+      <div class="activity-column">
+         <div class="column-header taken">
+            <h3>Transaction History (Taken)</h3>
+            <span class="count-tag">{{ takenList.length }} Entries</span>
+         </div>
+         <div class="scrolly-list">
+            <div class="txn-card taken" *ngFor="let t of takenList">
+               <div class="txn-main">
+                  <div class="txn-amount">₹ {{ t.Rs | number }}</div>
+                  <div class="txn-date">📅 {{ t.returnDate | date:'mediumDate' }}</div>
+               </div>
+               <div class="txn-details">
+                  <p class="desc">{{ t.description || 'No description provided' }}</p>
+                  <div class="txn-meta-info">
+                     <span class="badge mode">{{ t.paymentMode | uppercase }}</span>
+                     <span class="badge branch" *ngIf="t.hotelBranchName">{{ t.hotelBranchName }}</span>
+                     <span class="badge bill" *ngIf="t.billno">Bill: #{{ t.billno }}</span>
+                  </div>
+               </div>
+               <button class="btn-delete" (click)="confirmDelete('taken', t)" title="Remove Entry">🗑️</button>
+            </div>
+            <div class="empty-list" *ngIf="takenList.length === 0">
+               <div class="empty-icon">📂</div>
+               <p>No transactions found in this category</p>
+            </div>
+         </div>
       </div>
-      <div class="field">
-         <label>Name:</label>
-         <span>{{ userProfile.name }}</span>
-      </div>
-      <div class="field">
-         <label>Mobile:</label>
-         <span>{{ userProfile.mobile }}</span>
-      </div>
-      <div class="field">
-         <label>City:</label>
-         <span>{{ userProfile.city }}</span>
+
+      <!-- GIVEN SECTION -->
+      <div class="activity-column">
+         <div class="column-header given">
+            <h3>Transaction History (Given)</h3>
+            <span class="count-tag">{{ givenList.length }} Entries</span>
+         </div>
+         <div class="scrolly-list">
+            <div class="txn-card given" *ngFor="let g of givenList">
+               <div class="txn-main">
+                  <div class="txn-amount">₹ {{ g.Rs | number }}</div>
+                  <div class="txn-date">📅 {{ g.returnDate | date:'mediumDate' }}</div>
+               </div>
+               <div class="txn-details">
+                  <p class="desc">{{ g.description || 'No description provided' }}</p>
+                  <div class="txn-meta-info">
+                     <span class="badge mode">{{ g.paymentMode | uppercase }}</span>
+                     <span class="badge branch" *ngIf="g.hotelBranchName">{{ g.hotelBranchName }}</span>
+                     <span class="badge bill" *ngIf="g.billno">Bill: #{{ g.billno }}</span>
+                  </div>
+               </div>
+               <button class="btn-delete" (click)="confirmDelete('given', g)" title="Remove Entry">🗑️</button>
+            </div>
+            <div class="empty-list" *ngIf="givenList.length === 0">
+               <div class="empty-icon">📂</div>
+               <p>No transactions found in this category</p>
+            </div>
+         </div>
       </div>
    </div>
 </div>
-<div class="summary-boxes">
-  <div class="summary taken">
-    <h4>Total Taken</h4>
-    <p>₹ {{ totalTaken }}</p>
-  </div>
 
-  <div class="summary given">
-    <h4>Total Given</h4>
-    <p>₹ {{ totalGiven }}</p>
-  </div>
+<!-- TRANSACTION MODAL -->
+<div class="modal-overlay" *ngIf="showModal" (click)="$event.target === $event.currentTarget && closeModal()">
+   <div class="professional-modal card-shadow">
+      <div class="modal-header" [class.taken]="transactionType === 'taken'" [class.given]="transactionType === 'given'">
+         <h3>{{ transactionType === 'taken' ? 'Add Record: Taken From Admin' : 'Add Record: Given To Admin' }}</h3>
+         <button class="close-btn" (click)="closeModal()">&times;</button>
+      </div>
 
-  <div class="summary balance">
-    <h4>Final Balance</h4>
-    <p>₹ {{ finalBalance }}</p>
-  </div>
-</div>
+      <div class="modal-body">
+         <div class="form-grid">
+            <div class="form-group">
+               <input type="number" id="txnAmount" [(ngModel)]="transactionForm.Rs" required placeholder=" " />
+               <label for="txnAmount">Amount (₹)</label>
+               <div class="focus-border"></div>
+            </div>
 
-<div class="action-buttons">
-   <button class="btn taken" (click)="openTransactionModal('taken')">Taken From Admin</button>
-   <button class="btn given" (click)="openTransactionModal('given')">Given To Admin</button>
-</div>
+            <div class="form-group">
+               <input type="date" id="txnDate" [(ngModel)]="transactionForm.returnDate" required placeholder=" " />
+               <label for="txnDate">Return Date</label>
+               <div class="focus-border"></div>
+            </div>
 
-<div class="modal" *ngIf="showModal">
-   <div class="modal-content">
-      <h3>{{ transactionType === 'taken' ? 'Taken From Admin' : 'Given To Admin' }}</h3>
+            <div class="form-group full-width">
+               <input type="text" id="txnDesc" [(ngModel)]="transactionForm.description" required placeholder=" " />
+               <label for="txnDesc">Short Description</label>
+               <div class="focus-border"></div>
+            </div>
 
-      <input type="number" placeholder="Amount" [(ngModel)]="transactionForm.Rs">
-      <input type="date" [(ngModel)]="transactionForm.returnDate">
-      <input type="text" placeholder="Description" [(ngModel)]="transactionForm.description">
-      <input type="number" placeholder="Bill No" [(ngModel)]="transactionForm.billno">
+            <div class="form-group">
+               <input type="number" id="txnBill" [(ngModel)]="transactionForm.billno" placeholder=" " />
+               <label for="txnBill">Bill Number (Optional)</label>
+               <div class="focus-border"></div>
+            </div>
 
-      <!-- Branch select dropdown -->
-      <label>Branch:</label>
-      <select [(ngModel)]="transactionForm.hotelBranchName">
-         <option *ngFor="let b of branchList" [value]="b">{{ b }}</option>
-      </select>
+            <div class="form-group">
+               <select id="txnBranch" [(ngModel)]="transactionForm.hotelBranchName" class="modern-select">
+                  <option value="" disabled selected>Select Branch</option>
+                  <option *ngFor="let b of branchList" [value]="b">{{ b }}</option>
+               </select>
+               <label for="txnBranch" class="select-label">Assigned Branch</label>
+            </div>
+         </div>
+      </div>
 
-      <button (click)="submitTransaction()">Save</button>
-      <button (click)="closeModal()">Cancel</button>
+      <div class="modal-footer">
+         <button class="btn-secondary" (click)="closeModal()">Cancel</button>
+         <button class="btn-primary" (click)="submitTransaction()">Save Transaction</button>
+      </div>
    </div>
 </div>
 
-<div class="transactions">
-  <div class="left">
-    <h3>Taken From Admin</h3>
-    <div *ngIf="takenList.length === 0">No record</div>
-    <div *ngFor="let t of takenList" class="txn">
-      <p>₹ {{ t.Rs }}</p>
-      <p>{{ t.description }}</p>
-      <p>{{ t.paymentMode }}</p>
-      <p>{{ t.returnDate | date }}</p>
-      <small>{{ t.hotelBranchName }}</small>
-       <span class="delete-btn" (click)="deleteTransaction('taken', t._id)">🗑️ Delete</span>
-    </div>
-  </div>
-
-  <div class="right">
-    <h3>Given To Admin</h3>
-    <div *ngIf="givenList.length === 0">No record</div>
-    <div *ngFor="let g of givenList" class="txn">
-      <p>₹ {{ g.Rs }}</p>
-      <p>{{ g.description }}</p>
-      <p>{{ g.paymentMode }}</p>
-      <p>{{ g.returnDate | date }}</p>
-      <small>{{ g.hotelBranchName }}</small>
-        <span class="delete-btn" (click)="deleteTransaction('given', g._id)">🗑️ Delete</span>
-    </div>
-  </div>
+<!-- DELETE CONFIRMATION MODAL -->
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="$event.target === $event.currentTarget && cancelDelete()">
+   <div class="professional-modal card-shadow delete-modal">
+      <div class="modal-header">
+         <h3>🗑️ Confirm Deletion</h3>
+         <button class="close-btn" (click)="cancelDelete()">&times;</button>
+      </div>
+      <div class="modal-body text-center">
+         <p>Are you sure you want to delete this transaction of <strong>₹ {{ deleteTarget?.Rs }}</strong>?</p>
+         <p class="warning">This action is permanent and cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+         <button class="btn-secondary" (click)="cancelDelete()">Keep Transaction</button>
+         <button class="btn-primary danger" (click)="executeDelete()">Permanently Delete</button>
+      </div>
+   </div>
 </div>
-   
+
+<!-- ✅ TOAST NOTIFICATION -->
+<div class="toast-container" [class.show]="toast.show" [ngClass]="toast.type">
+   <div class="toast-content">
+      <span class="toast-icon">{{ toast.type === 'success' ? '✅' : '❌' }}</span>
+      <span class="toast-message">{{ toast.message }}</span>
+   </div>
+</div>

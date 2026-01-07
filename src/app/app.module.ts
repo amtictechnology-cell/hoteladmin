@@ -22,6 +22,8 @@ import { Khatabook } from './khatabook/khatabook';
 import { Khatabookprofile } from './khatabookprofile/khatabookprofile';
 import { Pcustomer } from './pcustomer/pcustomer';
 import { Pcprofile } from './pcprofile/pcprofile';
+import { AllCheque } from './all-cheque/all-cheque';
+import { Logout } from './logout/logout';
 
 
 
@@ -45,7 +47,10 @@ import { Pcprofile } from './pcprofile/pcprofile';
     Khatabook,
     Khatabookprofile,
     Pcustomer,
-    Pcprofile
+    Pcprofile,
+    AllCheque,
+    Logout
+
   ],
   imports: [
     BrowserModule,

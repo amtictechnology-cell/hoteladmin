@@ -24,11 +24,13 @@ export class AdminComponent {
 
   // files
   profileImageFile: File | null = null;
-  idProofImageFile: File | null = null;
+  idProofFrontFile: File | null = null;
+  idProofBackFile: File | null = null;
 
   // previews (optional)
   profileImagePreview: string | null = null;
-  idProofImagePreview: string | null = null;
+  idProofFrontPreview: string | null = null;
+  idProofBackPreview: string | null = null;
 
   newStaff: any = {
     staffId: '',
@@ -63,7 +65,7 @@ export class AdminComponent {
     });
 
     this.http.get<any>(
-      'http://localhost:5000/api/admin/staff/get-list',
+      'https://hotel-api.duckdns.org/api/admin/staff/get-list',
       { headers }
     ).subscribe(res => {
       this.staffList = res.staffList;
@@ -108,9 +110,11 @@ export class AdminComponent {
     this.isEditMode = false;
     this.showModal = true;
     this.profileImagePreview = null;
-    this.idProofImagePreview = null;
+    this.idProofFrontPreview = null;
+    this.idProofBackPreview = null;
     this.profileImageFile = null;
-    this.idProofImageFile = null;
+    this.idProofFrontFile = null;
+    this.idProofBackFile = null;
   }
 
   openEditModal(staff: any) {
@@ -120,16 +124,19 @@ export class AdminComponent {
 
     // 🔹 Do NOT show old images, only allow select new ones
     this.profileImagePreview = null;
-    this.idProofImagePreview = null;
+    this.idProofFrontPreview = null;
+    this.idProofBackPreview = null;
 
     this.profileImageFile = null;
-    this.idProofImageFile = null;
+    this.idProofFrontFile = null;
+    this.idProofBackFile = null;
   }
 
   closeModal() {
     this.showModal = false;
     this.profileImagePreview = null;
-    this.idProofImagePreview = null;
+    this.idProofFrontPreview = null;
+    this.idProofBackPreview = null;
   }
 
   // ================= IMAGE SELECT =================
@@ -146,14 +153,27 @@ export class AdminComponent {
     }
   }
 
-  onIdProofImageSelect(e: any) {
+  onIdProofFrontSelect(e: any) {
     if (e.target.files && e.target.files.length > 0) {
       const file: File = e.target.files[0];
-      this.idProofImageFile = file;
+      this.idProofFrontFile = file;
 
       const reader = new FileReader();
       reader.onload = () => {
-        this.idProofImagePreview = reader.result as string;
+        this.idProofFrontPreview = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  onIdProofBackSelect(e: any) {
+    if (e.target.files && e.target.files.length > 0) {
+      const file: File = e.target.files[0];
+      this.idProofBackFile = file;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.idProofBackPreview = reader.result as string;
       };
       reader.readAsDataURL(file);
     }
@@ -179,10 +199,14 @@ export class AdminComponent {
     fd.append('address[country]', '');
 
     if (this.profileImageFile) fd.append('profileImage', this.profileImageFile);
-    if (this.idProofImageFile) fd.append('IdProofImage', this.idProofImageFile);
+    if (this.idProofFrontFile) {
+      fd.append('IdProofFront', this.idProofFrontFile);
+      fd.append('IdProofImage', this.idProofFrontFile); // Send to original key for backend triggers
+    }
+    if (this.idProofBackFile) fd.append('IdProofBack', this.idProofBackFile);
 
     this.http.post(
-      'http://localhost:5000/api/admin/staff/add',
+      'https://hotel-api.duckdns.org/api/admin/staff/add',
       fd,
       { headers }
     ).subscribe({
@@ -215,10 +239,14 @@ export class AdminComponent {
     fd.append('address[country]', '');
 
     if (this.profileImageFile) fd.append('profileImage', this.profileImageFile);
-    if (this.idProofImageFile) fd.append('IdProofImage', this.idProofImageFile);
+    if (this.idProofFrontFile) {
+      fd.append('IdProofFront', this.idProofFrontFile);
+      fd.append('IdProofImage', this.idProofFrontFile);
+    }
+    if (this.idProofBackFile) fd.append('IdProofBack', this.idProofBackFile);
 
     this.http.patch(
-      'http://localhost:5000/api/admin/staff/update-profile',
+      'https://hotel-api.duckdns.org/api/admin/staff/update-profile',
       fd,
       { headers }
     ).subscribe({
@@ -259,9 +287,11 @@ export class AdminComponent {
       salary: '',
     };
     this.profileImageFile = null;
-    this.idProofImageFile = null;
+    this.idProofFrontFile = null;
+    this.idProofBackFile = null;
     this.profileImagePreview = null;
-    this.idProofImagePreview = null;
+    this.idProofFrontPreview = null;
+    this.idProofBackPreview = null;
   }
 
   goToProfile(id: string) {

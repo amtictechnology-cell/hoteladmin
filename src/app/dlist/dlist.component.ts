@@ -79,7 +79,7 @@ export class DlistComponent implements OnInit {
   // 🔹 Driver Detail
   getDriver() {
     this.http.get<any>(
-      'http://localhost:5000/api/admin/get-drivers',
+      'https://hotel-api.duckdns.org/api/admin/get-drivers',
       { headers: this.getHeaders() }
     ).subscribe({
       next: (res) => {
@@ -95,14 +95,32 @@ export class DlistComponent implements OnInit {
   // 🔹 Get Commission Entries
   getCommissionEntries() {
     this.http.get<any>(
-      'http://localhost:5000/api/admin/get-driver-commision-entries',
+      'https://hotel-api.duckdns.org/api/admin/get-driver-commision-entries',
       { headers: this.getHeaders() }
     ).subscribe({
       next: (res) => {
         const entries = res.entries || [];
-        this.allCommissions = entries.filter(
-          (e: any) => e.driverId === this.driverId
-        );
+
+        // 🔥 Defensive filtering: Handle both MongoDB ObjectId AND driver codes
+        this.allCommissions = entries.filter((e: any) => {
+          // Primary check: driverId matches MongoDB _id (correct format)
+          const primaryMatch = e.driverId === this.driverId;
+
+          // Fallback check: driverId might contain driver code in old records
+          const fallbackMatch = this.driver && e.driverId === this.driver.driverId;
+
+          // 🚨 Log warning if fallback is used (indicates old/wrong data)
+          if (!primaryMatch && fallbackMatch) {
+            console.warn('⚠️ Found commission entry with driver code instead of ObjectId:', {
+              entryId: e.entryId,
+              driverId: e.driverId,
+              expectedObjectId: this.driverId,
+              driverCode: this.driver?.driverId
+            });
+          }
+
+          return primaryMatch || fallbackMatch;
+        });
 
         this.commissions = [...this.allCommissions];
 
@@ -115,6 +133,13 @@ export class DlistComponent implements OnInit {
 
         // 🔥 Calculate branch statistics
         this.calculateBranchStats();
+
+        // 🔍 Debug log to verify data consistency
+        console.log('✅ Commission entries loaded:', {
+          total: this.allCommissions.length,
+          driverMongoId: this.driverId,
+          driverCode: this.driver?.driverId
+        });
       }
     });
   }
@@ -165,20 +190,35 @@ export class DlistComponent implements OnInit {
     if (!this.driver) return;
 
     const payload = {
-      driverId: this.driverId,
+      driverId: this.driverId, // ✅ This should be MongoDB _id
       partyAmount: this.newCommission.partyAmount,
       driverCommisionAmount: this.newCommission.commissionAmount,
       status: this.newCommission.status,
       description: this.newCommission.description,
     };
 
+    // 🔍 Debug: Verify we're sending the correct ID
+    console.log('📤 Adding commission with payload:', {
+      driverId: payload.driverId,
+      driverCode: this.driver.driverId,
+      partyAmount: payload.partyAmount
+    });
+
     this.http.post(
-      'http://localhost:5000/api/admin/add-driver-commision-entry',
+      'https://hotel-api.duckdns.org/api/admin/add-driver-commision-entry',
       payload,
       { headers: this.getHeaders() }
     ).subscribe({
       next: (res: any) => {
         if (res.entry) {
+          // 🔍 Verify the response contains correct driverId format
+          if (res.entry.driverId !== this.driverId) {
+            console.warn('⚠️ Backend returned different driverId format!', {
+              sent: this.driverId,
+              received: res.entry.driverId
+            });
+          }
+
           this.allCommissions.unshift(res.entry);
           this.filterByMonthYear();
         }
@@ -220,7 +260,7 @@ export class DlistComponent implements OnInit {
     };
 
     this.http.patch(
-      `http://35.198.28.86:5000/api/admin/edit-driver-commision-entry`,
+      `https://hotel-api.duckdns.org/api/admin/edit-driver-commision-entry`,
       payload,
       { headers: this.getHeaders() }
     ).subscribe({

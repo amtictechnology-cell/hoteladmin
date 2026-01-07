@@ -13,6 +13,11 @@ export class Pcprofile implements OnInit {
   customer: any;
   customerId: string | null = null;
 
+  /* ================= TOTALS ================= */
+  totalBill = 0;
+  totalPaid = 0;
+  finalBalance = 0;
+
   entry = {
     billAmount: '',
     amountPaidAfterDiscount: '',
@@ -23,12 +28,94 @@ export class Pcprofile implements OnInit {
 
   paymentScreenshot: File | null = null;
   entries: any[] = [];
-  api = 'http://localhost:5000/api/admin';
+
+  /* ================= TOAST NOTIFICATION ================= */
+  toast = {
+    show: false,
+    message: '',
+    type: 'success' as 'success' | 'error'
+  };
+
+  showToast(msg: string, type: 'success' | 'error' = 'success', duration: number = 2000) {
+    this.toast.message = msg;
+    this.toast.type = type;
+    this.toast.show = true;
+    setTimeout(() => {
+      this.toast.show = false;
+    }, duration);
+  }
+
+  /* ================= EDIT ENTRY MODAL ================= */
+  showEditModal = false;
+  isProcessing = false;
+  selectedEntry: any = null;
+  editForm = {
+    billAmount: 0,
+    amountPaidAfterDiscount: 0,
+    paymentMode: 'cash'
+  };
+
+  openEditModal(entry: any) {
+    this.selectedEntry = entry;
+    this.editForm = {
+      billAmount: entry.billAmount,
+      amountPaidAfterDiscount: entry.amountPaidAfterDiscount,
+      paymentMode: entry.paymentMode
+    };
+    this.showEditModal = true;
+  }
+
+  closeEditModal() {
+    this.showEditModal = false;
+    this.selectedEntry = null;
+  }
+
+  updateEntry() {
+    if (!this.selectedEntry) return;
+
+    // Basic Validation
+    if (!this.editForm.billAmount || !this.editForm.amountPaidAfterDiscount) {
+      this.showToast('Please fill all required fields', 'error');
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+
+    const payload = {
+      personalCustomerEntryId: this.selectedEntry._id || this.selectedEntry.id, // API expects this
+      billAmount: this.editForm.billAmount,
+      amountPaidAfterDiscount: String(this.editForm.amountPaidAfterDiscount),
+      paymentMode: this.editForm.paymentMode
+    };
+
+    this.isProcessing = true;
+    this.http.patch(
+      `${this.api}/update/personal/customer/entry`,
+      payload,
+      { headers }
+    ).subscribe({
+      next: () => {
+        this.showToast('Entry updated successfully', 'success', 1000);
+        this.closeEditModal();
+        this.getCustomerEntries(); // Refresh list
+        this.isProcessing = false;
+      },
+      error: (err) => {
+        console.error(err);
+        this.showToast(err.error?.message || 'Failed to update entry', 'error');
+        this.isProcessing = false;
+      }
+    });
+  }
+
+  api = 'https://hotel-api.duckdns.org/api/admin';
   loadingEntries = false;
 
   constructor(
     private route: ActivatedRoute,
-    private http: HttpClient
+    private http: HttpClient,
+    public router: Router
   ) { }
 
   ngOnInit() {
@@ -62,6 +149,7 @@ export class Pcprofile implements OnInit {
     ).subscribe({
       next: res => {
         this.entries = res.data || [];
+        this.calculateTotals();
         this.loadingEntries = false;
       },
       error: err => {
@@ -71,11 +159,16 @@ export class Pcprofile implements OnInit {
     });
   }
 
+  calculateTotals() {
+    this.totalBill = this.entries.reduce((sum, e) => sum + Number(e.billAmount || 0), 0);
+    this.totalPaid = this.entries.reduce((sum, e) => sum + Number(e.amountPaidAfterDiscount || 0), 0);
+    this.finalBalance = this.totalBill - this.totalPaid;
+  }
+
   // 🔵 FILE SELECT
   onFileSelect(event: any) {
     if (event.target.files && event.target.files.length > 0) {
       this.paymentScreenshot = event.target.files[0];
-      console.log('Selected File:', this.paymentScreenshot);
     } else {
       this.paymentScreenshot = null;
     }
@@ -84,23 +177,18 @@ export class Pcprofile implements OnInit {
   // 🔵 ADD ENTRY (FormData POST)
   addEntry() {
     const token = localStorage.getItem('token');
-    if (!token) return alert('Token missing');
-    if (!this.customerId) return alert('Customer ID missing');
+    if (!token) return this.showToast('Token missing', 'error');
+    if (!this.customerId) return this.showToast('Customer ID missing', 'error');
 
     // Validate required fields
-    if (!this.entry.billAmount || this.entry.billAmount === '') {
-      return alert('Bill Amount is required');
+    if (!this.entry.billAmount) {
+      return this.showToast('Bill Amount is required', 'error');
     }
-    if (!this.entry.amountPaidAfterDiscount || this.entry.amountPaidAfterDiscount === '') {
-      return alert('Amount Paid After Discount is required');
-    }
-    if (!this.entry.paymentMode) {
-      return alert('Payment Mode is required');
+    if (!this.entry.amountPaidAfterDiscount) {
+      return this.showToast('Amount Paid is required', 'error');
     }
 
     const formData = new FormData();
-
-    // REQUIRED FIELDS
     formData.append('personalCustomerRecordTranId', String(this.customerId));
     formData.append('billAmount', String(this.entry.billAmount));
     formData.append('amountPaidAfterDiscount', String(this.entry.amountPaidAfterDiscount));
@@ -108,35 +196,19 @@ export class Pcprofile implements OnInit {
     formData.append('description', String(this.entry.description || ''));
     formData.append('status', String(this.entry.status));
 
-    // FILE - only append if file is selected (matching pattern from expense/earning APIs)
     if (this.paymentScreenshot) {
       formData.append('paymentScreenshoot', this.paymentScreenshot);
     }
 
-    // Debug: Log FormData contents
-    console.log('📤 Submitting Personal Customer Entry:');
-    console.log('personalCustomerRecordTranId:', this.customerId);
-    console.log('billAmount:', this.entry.billAmount);
-    console.log('amountPaidAfterDiscount:', this.entry.amountPaidAfterDiscount);
-    console.log('paymentMode:', this.entry.paymentMode);
-    console.log('description:', this.entry.description);
-    console.log('status:', this.entry.status);
-    console.log('paymentScreenshot file:', this.paymentScreenshot ? this.paymentScreenshot.name : 'No file selected');
-
-    // Log all FormData entries
-    console.log('\n🔍 FormData entries:');
-    for (let pair of (formData as any).entries()) {
-      console.log(pair[0], ':', pair[1]);
-    }
-
+    this.isProcessing = true;
     this.http.post(
       `${this.api}/add/personal/customer/entry`,
       formData,
       { headers: { Authorization: `Bearer ${token}` } }
     ).subscribe({
       next: () => {
-        alert('Entry Added Successfully');
-
+        this.showToast('Entry Added Successfully', 'success', 1000);
+        this.isProcessing = false;
         this.entry = {
           billAmount: '',
           amountPaidAfterDiscount: '',
@@ -144,16 +216,14 @@ export class Pcprofile implements OnInit {
           description: '',
           status: 'Pending'
         };
-
         this.paymentScreenshot = null;
         this.getCustomerEntries();
       },
       error: err => {
         console.error(err);
-        alert(err.error?.message || 'Error adding entry');
+        this.showToast(err.error?.message || 'Error adding entry', 'error');
+        this.isProcessing = false;
       }
     });
   }
-
-
 }

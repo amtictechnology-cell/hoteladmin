@@ -28,7 +28,8 @@
     <input type="text" placeholder="Search Supplier..." [(ngModel)]="supplierSearchText" (input)="filterSuppliers()"
       class="supplier-search" />
 
-    <button class="add-supplier-btn" (click)="openSupplierForm()">+ Add Supplier</button>
+    <button class="add-btn" (click)="openSupplierForm()">+ Add Supplier</button>
+    <button class="add-btn" [routerLink]="['/home/all-cheque']">All Cheque</button>
   </div>
 
   <!-- SUPPLIER LIST -->
@@ -77,51 +78,159 @@
 <!-- ================= EXPENSE SECTION ================= -->
 <!-- Add Expensis -->
 <div *ngIf="activeDiv === 'expense'" class="content-box">
-  <h3 class="expense-heading">Hotel Expense & Earning</h3>
-  <div *ngIf="showAddExpenseForm" class="form-box">
-    <h3>Add Expense</h3>
-    <input type="number" placeholder="Amount" [(ngModel)]="expenseForm.amount">
-    <input type="text" placeholder="Items (comma separated)" [(ngModel)]="expenseForm.items">
-    <input type="date" [(ngModel)]="expenseForm.date">
-    <input type="number" placeholder="Bill Number" [(ngModel)]="expenseForm.billno"> <!-- BILL NO -->
-
-    <input type="text" placeholder="Description" [(ngModel)]="expenseForm.description">
-    <select [(ngModel)]="expenseForm.branch">
-      <option *ngFor="let b of branches" [value]="b">{{ b }}</option>
-    </select>
-
-
-    <select [(ngModel)]="expenseForm.mode">
-      <option value="cash">Cash</option>
-      <option value="online">Online</option>
-    </select>
-    <input type="file" (change)="onExpenseImageSelect($event)" accept="image/*">
-    <button (click)="addExpense()">Submit</button>
-    <button class="cancel" (click)="showAddExpenseForm=false">Cancel</button>
+  <!-- ================= DATE FILTER (EXPENSE ONLY) ================= -->
+  <div class="date-filter-row" *ngIf="hotelExpenses.length > 0 || allHotelExpenses.length > 0">
+    <div class="filter-controls">
+      <div class="filter-group">
+        <label>Filter Expenses:</label>
+        <select [(ngModel)]="selectedExpenseMonth" (change)="onExpenseFilterChange()" class="filter-select">
+          <option value="">All Months</option>
+          <option *ngFor="let month of months; let i = index" [value]="i">{{ month }}</option>
+        </select>
+        <select [(ngModel)]="selectedExpenseYear" (change)="onExpenseFilterChange()" class="filter-select">
+          <option value="">All Years</option>
+          <option *ngFor="let year of availableExpenseYears" [value]="year">{{ year }}</option>
+        </select>
+        <button class="clear-btn" (click)="clearExpenseFilters()"
+          *ngIf="selectedExpenseMonth !== '' || selectedExpenseYear !== ''">
+          Clear
+        </button>
+      </div>
+    </div>
   </div>
 
-
-  <!-- Add Earning -->
-  <div *ngIf="showAddEarningForm" class="form-box">
-    <h3>Add Earning</h3>
-    <input type="number" placeholder="Amount" [(ngModel)]="earningForm.amount">
-    <input type="text" placeholder="Details (comma separated)" [(ngModel)]="earningForm.details">
-    <input type="date" [(ngModel)]="earningForm.date">
-    <input type="number" placeholder="Bill Number" [(ngModel)]="earningForm.billno">
-    <select [(ngModel)]="earningForm.branch">
-      <option *ngFor="let b of branches" [value]="b">{{ b }}</option>
-    </select>
-    <!-- BILL NO -->
-
-    <input type="text" placeholder="Description" [(ngModel)]="earningForm.description">
-    <select [(ngModel)]="earningForm.mode">
-      <option value="cash">Cash</option>
-      <option value="online">Online</option>
-    </select>
-    <input type="file" (change)="onEarningImageSelect($event)" accept="image/*">
-    <button (click)="addEarning()">Submit</button>
-    <button class="cancel" (click)="showAddEarningForm=false">Cancel</button>
+  <!-- Add Expense Form -->
+  <div *ngIf="showAddExpenseForm" class="modal-overlay">
+    <div class="modern-form-box">
+      <div class="form-header">
+        <h3>💸 Add New Expense</h3>
+        <button class="close-icon" (click)="showAddExpenseForm=false">&times;</button>
+      </div>
+      <div class="form-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Amount (₹)</label>
+            <div class="input-icon-wrapper">
+              <span class="icon">₹</span>
+              <input type="number" placeholder="0.00" [(ngModel)]="expenseForm.amount">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Bill Number</label>
+            <div class="input-icon-wrapper">
+              <span class="icon">#</span>
+              <input type="number" placeholder="Optional" [(ngModel)]="expenseForm.billno">
+            </div>
+          </div>
+          <div class="form-group full-width">
+            <label>Items / Details</label>
+            <input type="text" placeholder="e.g. Vegetables, Cleaning supplies" [(ngModel)]="expenseForm.items">
+          </div>
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" [(ngModel)]="expenseForm.date">
+          </div>
+          <div class="form-group">
+            <label>Time</label>
+            <input type="time" [(ngModel)]="expenseForm.time">
+          </div>
+          <div class="form-group">
+            <label>Branch</label>
+            <select [(ngModel)]="expenseForm.branch">
+              <option *ngFor="let b of branches" [value]="b">{{ b }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Payment Mode</label>
+            <select [(ngModel)]="expenseForm.mode">
+              <option value="cash">💵 Cash</option>
+              <option value="online">💳 Online</option>
+              <option value="cheque">📄 Cheque</option>
+            </select>
+          </div>
+          <div class="form-group full-width">
+            <label>Description (Internal Note)</label>
+            <textarea placeholder="Any additional details..." [(ngModel)]="expenseForm.description"></textarea>
+          </div>
+          <div class="form-group full-width">
+            <label>Receipt Screenshot</label>
+            <input type="file" (change)="onExpenseImageSelect($event)" accept="image/*" class="modern-file-input">
+          </div>
+        </div>
+      </div>
+      <div class="form-footer">
+        <button class="cancel-btn" (click)="showAddExpenseForm=false">Cancel</button>
+        <button class="submit-btn" (click)="addExpense()">Save Expense</button>
+      </div>
+    </div>
   </div>
+
+  <!-- Add Earning Form -->
+  <div *ngIf="showAddEarningForm" class="modal-overlay">
+    <div class="modern-form-box earning-style">
+      <div class="form-header">
+        <h3>💰 Add New Earning</h3>
+        <button class="close-icon" (click)="showAddEarningForm=false">&times;</button>
+      </div>
+      <div class="form-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Amount (₹)</label>
+            <div class="input-icon-wrapper">
+              <span class="icon">₹</span>
+              <input type="number" placeholder="0.00" [(ngModel)]="earningForm.amount">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Bill Number</label>
+            <div class="input-icon-wrapper">
+              <span class="icon">#</span>
+              <input type="number" placeholder="Optional" [(ngModel)]="earningForm.billno">
+            </div>
+          </div>
+          <div class="form-group full-width">
+            <label>Earning Source / Details</label>
+            <input type="text" placeholder="e.g. Room Rent, Restaurant Bill" [(ngModel)]="earningForm.details">
+          </div>
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" [(ngModel)]="earningForm.date">
+          </div>
+          <div class="form-group">
+            <label>Time</label>
+            <input type="time" [(ngModel)]="earningForm.time">
+          </div>
+          <div class="form-group">
+            <label>Branch</label>
+            <select [(ngModel)]="earningForm.branch">
+              <option *ngFor="let b of branches" [value]="b">{{ b }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Payment Mode</label>
+            <select [(ngModel)]="earningForm.mode">
+              <option value="cash">💵 Cash</option>
+              <option value="online">💳 Online</option>
+              <option value="cheque">📄 Cheque</option>
+            </select>
+          </div>
+          <div class="form-group full-width">
+            <label>Description</label>
+            <textarea placeholder="Details about this earning..." [(ngModel)]="earningForm.description"></textarea>
+          </div>
+          <div class="form-group full-width">
+            <label>Payment Screenshot</label>
+            <input type="file" (change)="onEarningImageSelect($event)" accept="image/*" class="modern-file-input">
+          </div>
+        </div>
+      </div>
+      <div class="form-footer">
+        <button class="cancel-btn" (click)="showAddEarningForm=false">Cancel</button>
+        <button class="submit-btn" (click)="addEarning()">Save Earning</button>
+      </div>
+    </div>
+  </div>
+
   <div class="branch-row">
     <div class="branch-card" *ngFor="let b of branches" [class.active]="selectedBranch === b" (click)="changeBranch(b)">
       {{ b }}
@@ -130,95 +239,106 @@
 
   <!-- Top Final Price -->
   <div class="summary">
-
-    <!-- Total Earnings -->
     <div class="summary-one">
       <p class="summary-title">Total Earnings</p>
-      <p class="summary-subtitle">
-        ₹{{ totalMonthlyEarnings || 0 }}
-      </p>
+      <p class="summary-subtitle">₹{{ totalMonthlyEarnings || 0 }}</p>
     </div>
-
-    <!-- Total Expenses -->
     <div class="summary-two">
       <p class="summary-title-two">Total Expenses</p>
-      <p class="summary-subtitle-two">
-        ₹{{ totalMonthlyExpenses || 0 }}
-      </p>
+      <p class="summary-subtitle-two">₹{{ totalMonthlyExpenses || 0 }}</p>
     </div>
-
-    <!-- 🔥 Final Balance -->
     <div class="summary-three">
       <p class="summary-title">Final Balance</p>
-      <p class="summary-subtitle">
-        ₹{{ (totalMonthlyEarnings || 0) - (totalMonthlyExpenses || 0) }}
-      </p>
+      <p class="summary-subtitle">₹{{ (totalMonthlyEarnings || 0) - (totalMonthlyExpenses || 0) }}</p>
     </div>
-
   </div>
-
-
 
   <!-- Add Button -->
   <div class="btn-row">
-    <button class="btn-2" (click)="showAddEarningForm = true" style="background: rgb(5, 192, 5);">+ Add Earning</button>
-    <button class="btn-1" (click)="showAddExpenseForm = true" style="background: rgb(255, 0, 0);">+ Add Expense</button>
+    <button class="btn-2" (click)="resetEarningForm(); showAddEarningForm = true">+ Add Earning</button>
+    <button class="btn-1" (click)="resetExpenseForm(); showAddExpenseForm = true">+ Add Expense</button>
   </div>
 
-  <!-- Earning amount -->
+  <!-- Lists -->
   <div class="two-lists">
     <div class="list-box">
-      <h3 style="font-size: 22px; font-weight: 600; color: rgb(78, 77, 77);">Earning List</h3>
+      <div class="list-header">
+        <span class="icon">📈</span>
+        <h3>Earning List</h3>
+      </div>
       <div *ngFor="let e of hotelEarnings">
-        <div class="card">
+        <div class="card earning-card">
           <div class="title-box">
-            <p><strong>Amount:</strong> ₹{{ e.earningAmount }}</p>
-            <p><strong>Date:</strong> {{ e.earningDate | date }}</p>
-            <p><strong>Mode:</strong> {{ e.paymentMode }}</p>
-            <p><strong>Bill No:</strong> {{ e.billno || '-' }}</p>
-            <p><strong>Description:</strong> {{ e.discription || '-' }}</p>
-            <p><strong>Time:</strong> {{ e.time || (e.dateTime | date:'shortTime') }}</p>
-            <p><strong>Branch:</strong> {{ e.hotelBranchName }}</p>
-
+            <p class="amount">₹{{ e.earningAmount }} <span class="mode-tag" [ngClass]="e.paymentMode">({{ e.paymentMode
+                }})</span></p>
+            <p class="date">📅 {{ e.earningDate | date:'dd MMM yyyy' }} • ⌚ {{ e.time || (e.dateTime | date:'shortTime')
+              }}</p>
+            <p class="meta"><strong>Bill:</strong> {{ e.billno || '-' }}</p>
+            <p class="meta"><strong>Desc:</strong> {{ e.discription || '-' }}</p>
+            <p class="meta"><strong>Branch:</strong> {{ e.hotelBranchName }}</p>
           </div>
-          <div class="img-box">
-            <img *ngIf="e.paymentScreenshoot" [src]="e.paymentScreenshoot" class="thumb-img"
-              (click)="openImage(e.paymentScreenshoot)">
+          <div class="img-box" *ngIf="e.paymentScreenshoot">
+            <img [src]="e.paymentScreenshoot" class="thumb-img" (click)="openImage(e.paymentScreenshoot)">
           </div>
-          <button class="delete-btn" (click)="deleteEarningExpense(e, 'earnings')">
-            Delete
-          </button>
-
+          <div class="action-box">
+            <button class="delete-icon-btn" (click)="confirmDelete(e, 'earnings')" title="Delete">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
+      <div class="no-data" *ngIf="hotelEarnings.length === 0">No earnings found for this branch.</div>
     </div>
-    <!-- EXPENSE LIST -->
+
     <div class="list-box">
-      <h3 style="font-size: 22px; font-weight: 600; color: rgb(78, 77, 77);">Expense List</h3>
+      <div class="list-header">
+        <span class="icon">📉</span>
+        <h3>Expense List</h3>
+      </div>
       <div *ngFor="let e of hotelExpenses">
-        <div class="card">
+        <div class="card expense-card">
           <div class="title-box">
-            <p><strong>Amount:</strong> ₹{{ e.expenseAmount }}</p>
-            <p><strong>Date:</strong> {{ e.expenseDate | date }}</p>
-            <p><strong>Mode:</strong> {{ e.paymentMode }}</p>
-            <p><strong>Bill No:</strong> {{ e.billno || '-' }}</p>
-            <p><strong>Description:</strong> {{ e.discription || '-' }}</p>
-            <p><strong>Time:</strong> {{ e.dateTime | date:'shortTime' }}</p>
-            <p><strong>Branch:</strong> {{ e.hotelBranchName }}</p>
-
-
+            <p class="amount">₹{{ e.expenseAmount }} <span class="mode-tag" [ngClass]="e.paymentMode">({{ e.paymentMode
+                }})</span></p>
+            <p class="date">📅 {{ e.expenseDate | date:'dd MMM yyyy' }} • ⌚ {{ e.dateTime | date:'shortTime' }}</p>
+            <p class="meta"><strong>Bill:</strong> {{ e.billno || '-' }}</p>
+            <p class="meta"><strong>Desc:</strong> {{ e.discription || '-' }}</p>
+            <p class="meta"><strong>Branch:</strong> {{ e.hotelBranchName }}</p>
           </div>
-          <div class="img-box">
-            <img *ngIf="e.paymentScreenshoot" [src]="e.paymentScreenshoot" class="thumb-img"
-              (click)="openImage(e.paymentScreenshoot)">
+          <div class="img-box" *ngIf="e.paymentScreenshoot">
+            <img [src]="e.paymentScreenshoot" class="thumb-img" (click)="openImage(e.paymentScreenshoot)">
           </div>
-          <button class="delete-btn" (click)="deleteEarningExpense(e, 'expenses')">
-            Delete
-          </button>
-
+          <div class="action-box">
+            <button class="delete-icon-btn" (click)="confirmDelete(e, 'expenses')" title="Delete">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
+      <div class="no-data" *ngIf="hotelExpenses.length === 0">No expenses found matching filters.</div>
+    </div>
+  </div>
+</div>
 
+<!-- ✅ DELETE CONFIRMATION MODAL -->
+<div class="modal-overlay" *ngIf="showDeleteModal">
+  <div class="modern-form-box delete-modal">
+    <div class="form-header">
+      <h3>🗑️ Confirm Delete</h3>
+      <button class="close-icon" (click)="cancelDelete()">&times;</button>
+    </div>
+    <div class="form-body">
+      <p>Are you sure you want to delete this entry? This action cannot be undone.</p>
+    </div>
+    <div class="form-footer">
+      <button class="cancel-btn" (click)="cancelDelete()">Keep Entry</button>
+      <button class="submit-btn delete-btn" (click)="executeDelete()">Permanently Delete</button>
     </div>
   </div>
 </div>
@@ -251,5 +371,13 @@
 
     <img [src]="previewImageUrl" class="full-img">
 
+  </div>
+</div>
+
+<!-- ✅ TOAST NOTIFICATION -->
+<div class="toast-container" [class.show]="toast.show" [ngClass]="toast.type">
+  <div class="toast-content">
+    <span class="toast-icon">{{ toast.type === 'success' ? '✅' : '❌' }}</span>
+    <span class="toast-message">{{ toast.message }}</span>
   </div>
 </div>

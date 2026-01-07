@@ -46,7 +46,7 @@
 
 .sr-number {
   font-weight: bold;
-  color: #ff5623;
+  color: #ff0000;
   margin-right: 10px;
 }
 
@@ -66,7 +66,7 @@
 }
 
 .btn-edit {
-  background: #ff5623;
+  background: #ff0000;
   border: none;
   padding: 6px 12px;
   border-radius: 6px;
@@ -78,7 +78,7 @@
 }
 
 .btn-edit:hover {
-  background: #e0a800;
+  background: #6b0000;
   color: white;
 }
 
@@ -109,13 +109,13 @@
 
 .driver-actions input:focus {
   outline: none;
-  border-color: #ff5623;
+  border-color: #ff0000;
 }
 
 .btn-secondary {
   width: 100%;
   padding: 10px;
-  background: #ff5623;
+  background: #ff0000;
   border: none;
   border-radius: 6px;
   color: #fff;
@@ -125,7 +125,7 @@
 }
 
 .btn-secondary:hover {
-  background: #df3602;
+  background: #5e0404;
 }
 
 /* ---------------- Modal Styling ---------------- */
@@ -176,7 +176,7 @@
 }
 
 .modal-content input:focus {
-  border-color: #ff5623;
+  border-color: #ff0000;
   outline: none;
 }
 
@@ -190,21 +190,21 @@
 }
 
 .modal-content button[type="submit"] {
-  background: #ff5623;
+  background: #ff0000;
   color: #fff;
 }
 
 .modal-content button[type="submit"]:hover {
-  background: #0b0429;
+  background: #500000;
 }
 
 .modal-content button[type="button"] {
-  background: #ff5623;
+  background: #ff0000;
   color: #fff;
 }
 
 .modal-content button[type="button"]:hover {
-  background: #0b0429;
+  background: #2e0101;
 }
 
 /* Animation */
