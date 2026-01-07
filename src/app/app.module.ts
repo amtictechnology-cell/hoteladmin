@@ -24,7 +24,7 @@ import { Pcustomer } from './pcustomer/pcustomer';
 import { Pcprofile } from './pcprofile/pcprofile';
 import { AllCheque } from './all-cheque/all-cheque';
 import { Logout } from './logout/logout';
-import { LocationStrategy, PathLocationStrategy } from '@angular/common';
+
 
 
 
@@ -61,7 +61,7 @@ import { LocationStrategy, PathLocationStrategy } from '@angular/common';
     ReactiveFormsModule,
     CommonModule
   ],
-  providers: [ { provide: LocationStrategy, useClass: PathLocationStrategy }],
+  providers: [ ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
