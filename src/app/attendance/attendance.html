@@ -32,13 +32,13 @@
 
     <tbody>
       <tr *ngFor="let s of filteredStaff; let i = index">
-        <td>{{ i + 1 }}</td>
-        <td>{{ s.firstName }} {{ s.lastName }}</td>
-        <td>{{ s.mobile }}</td>
-        <td>{{ s.branchName }}</td>
-        <td>{{ s.address?.city }}</td>
-        <td>{{ s.attendance }}</td>
-        <td>
+        <td data-label="SR">{{ i + 1 }}</td>
+        <td data-label="Name">{{ s.firstName }} {{ s.lastName }}</td>
+        <td data-label="Mobile">{{ s.mobile }}</td>
+        <td data-label="Branch">{{ s.branchName }}</td>
+        <td data-label="City">{{ s.address?.city }}</td>
+        <td data-label="Attendance">{{ s.attendance }}</td>
+        <td data-label="Action">
           <button *ngIf="!s.attendanceMarked" class="btn mark-btn" (click)="openAttendanceModal(s)">
             Mark Attendance
           </button>
@@ -53,55 +53,80 @@
 
   <!-- Mark Attendance Modal -->
   <div class="modal" *ngIf="showModal">
-    <div class="modal-content">
-      <h3>Mark Attendance - {{ selectedStaff?.firstName }}</h3>
-
-      <div class="edit-options">
-        <label>
-          <input type="radio" name="attendance" value="P" [(ngModel)]="selectedAttendance" /> Present
-        </label>
-        <label>
-          <input type="radio" name="attendance" value="A" [(ngModel)]="selectedAttendance" /> Absent
-        </label>
-        <label>
-          <input type="radio" name="attendance" value="H" [(ngModel)]="selectedAttendance" /> Half Day
-        </label>
-        <label>
-          <input type="radio" name="attendance" value="PL" [(ngModel)]="selectedAttendance" /> Paid Leave
-        </label>
+    <div class="modal-content professional-modal">
+      <div class="modal-header">
+        <h3>Mark Attendance - {{ selectedStaff?.firstName }}</h3>
+        <button class="close-btn" (click)="closeModal()">&times;</button>
       </div>
 
-      <div class="modal-actions">
-        <button class="btn mark-btn" (click)="markSelectedAttendance()">Submit</button>
+      <div class="modal-body">
+        <div class="attendance-options">
+          <label class="option-card" [class.active]="selectedAttendance === 'P'">
+            <input type="radio" name="attendance" value="P" [(ngModel)]="selectedAttendance" />
+            <span class="status-icon present">P</span>
+            <span class="status-label">Present</span>
+          </label>
+          <label class="option-card" [class.active]="selectedAttendance === 'A'">
+            <input type="radio" name="attendance" value="A" [(ngModel)]="selectedAttendance" />
+            <span class="status-icon absent">A</span>
+            <span class="status-label">Absent</span>
+          </label>
+          <label class="option-card" [class.active]="selectedAttendance === 'H'">
+            <input type="radio" name="attendance" value="H" [(ngModel)]="selectedAttendance" />
+            <span class="status-icon half">H</span>
+            <span class="status-label">Half Day</span>
+          </label>
+          <label class="option-card" [class.active]="selectedAttendance === 'PL'">
+            <input type="radio" name="attendance" value="PL" [(ngModel)]="selectedAttendance" />
+            <span class="status-icon leave">PL</span>
+            <span class="status-label">Paid Leave</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-footer">
         <button class="btn cancel-btn" (click)="closeModal()">Cancel</button>
+        <button class="btn mark-btn" (click)="markSelectedAttendance()">Submit Attendance</button>
       </div>
     </div>
   </div>
 
   <!-- Edit Attendance Modal -->
   <div class="modal" *ngIf="showEditModal">
-    <div class="modal-content">
-      <h3>Edit Attendance - {{ selectedStaff?.firstName }}</h3>
-
-      <div class="edit-options">
-        <label>
-          <input type="radio" name="editAttendance" value="Present" [(ngModel)]="selectedEditAttendance" /> Present
-        </label>
-        <label>
-          <input type="radio" name="editAttendance" value="Absent" [(ngModel)]="selectedEditAttendance" /> Absent
-        </label>
-        <label>
-          <input type="radio" name="editAttendance" value="Half Day" [(ngModel)]="selectedEditAttendance" /> Half Day
-        </label>
-        <label>
-          <input type="radio" name="editAttendance" value="Paid Leave" [(ngModel)]="selectedEditAttendance" /> Paid
-          Leave
-        </label>
+    <div class="modal-content professional-modal">
+      <div class="modal-header">
+        <h3>Edit Attendance - {{ selectedStaff?.firstName }}</h3>
+        <button class="close-btn" (click)="closeEditModal()">&times;</button>
       </div>
 
-      <div class="modal-actions">
-        <button class="btn edit-btn" (click)="updateAttendance()">Update</button>
+      <div class="modal-body">
+        <div class="attendance-options">
+          <label class="option-card" [class.active]="selectedEditAttendance === 'Present'">
+            <input type="radio" name="editAttendance" value="Present" [(ngModel)]="selectedEditAttendance" />
+            <span class="status-icon present">P</span>
+            <span class="status-label">Present</span>
+          </label>
+          <label class="option-card" [class.active]="selectedEditAttendance === 'Absent'">
+            <input type="radio" name="editAttendance" value="Absent" [(ngModel)]="selectedEditAttendance" />
+            <span class="status-icon absent">A</span>
+            <span class="status-label">Absent</span>
+          </label>
+          <label class="option-card" [class.active]="selectedEditAttendance === 'Half Day'">
+            <input type="radio" name="editAttendance" value="Half Day" [(ngModel)]="selectedEditAttendance" />
+            <span class="status-icon half">H</span>
+            <span class="status-label">Half Day</span>
+          </label>
+          <label class="option-card" [class.active]="selectedEditAttendance === 'Paid Leave'">
+            <input type="radio" name="editAttendance" value="Paid Leave" [(ngModel)]="selectedEditAttendance" />
+            <span class="status-icon leave">PL</span>
+            <span class="status-label">Paid Leave</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-footer">
         <button class="btn cancel-btn" (click)="closeEditModal()">Cancel</button>
+        <button class="btn edit-btn" (click)="updateAttendance()">Update Attendance</button>
       </div>
     </div>
   </div>

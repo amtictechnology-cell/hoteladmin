@@ -18,6 +18,23 @@ export class AdminComponent {
   sikarCount = 0;
   sanwaliCount = 0;
 
+  /* ================= KHATABOOK SUMMARY ================= */
+  // Overall totals for all staff
+  totalTakenAll = 0;
+  totalGivenAll = 0;
+  overallBalance = 0;
+
+  // Per-staff khatabook data: { staffId: { taken, given, salary, balance } }
+  staffKhatabookMap: { [key: string]: { taken: number; given: number; salary: number; balance: number } } = {};
+
+  // Current month/year for khatabook
+  currentMonth = new Date().getMonth() + 1;
+  currentYear = new Date().getFullYear();
+
+  // Track loading state
+  loadingKhatabook = false;
+
+
 
   showModal = false;
   isEditMode = false;
@@ -85,7 +102,133 @@ export class AdminComponent {
         if (s.branchName === 'Sikar') this.sikarCount++;
         if (s.branchName === 'Sanwali') this.sanwaliCount++;
       });
+
+      // ✅ Fetch khatabook summary for all staff
+      this.getAllKhatabookSummary();
     });
+  }
+
+  /* ================= KHATABOOK + SALARY SUMMARY FOR ALL STAFF ================= */
+  getAllKhatabookSummary() {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+
+    // Reset totals
+    this.totalTakenAll = 0;
+    this.totalGivenAll = 0;
+    this.overallBalance = 0;
+    this.staffKhatabookMap = {};
+    this.loadingKhatabook = true;
+
+    let completedCount = 0;
+    const totalStaff = this.staffList.length;
+
+    // Fetch khatabook AND salary for each staff
+    this.staffList.forEach((staff: any) => {
+      // Initialize with zeros
+      this.staffKhatabookMap[staff.staffId] = { taken: 0, given: 0, salary: 0, balance: 0 };
+
+      // 1. Fetch Khatabook Data
+      this.http.get<any>(
+        `https://hotel-api.duckdns.org/api/admin/staff/khatabook/get-details?staffId=${staff.staffId}&month=${this.currentMonth}&year=${this.currentYear}`,
+        { headers }
+      ).subscribe({
+        next: (res) => {
+          const khatabook = res.khatabook || {};
+          const takenArr = khatabook.takenFromAdmin || [];
+          const givenArr = khatabook.givenToAdmin || [];
+
+          // Filter by current month/year
+          const filterByDate = (items: any[]) => {
+            return items.filter((item: any) => {
+              const date = new Date(item.updatedAt);
+              return date.getMonth() + 1 === this.currentMonth && date.getFullYear() === this.currentYear;
+            });
+          };
+
+          const filteredTaken = filterByDate(takenArr);
+          const filteredGiven = filterByDate(givenArr);
+
+          const manualTaken = filteredTaken.reduce((sum: number, t: any) => sum + (t.Rs || 0), 0);
+          const manualGiven = filteredGiven.reduce((sum: number, t: any) => sum + (t.Rs || 0), 0);
+
+          // Update staff map with manual entries
+          this.staffKhatabookMap[staff.staffId].taken = manualTaken;
+          this.staffKhatabookMap[staff.staffId].given = manualGiven;
+
+          // Recalculate balance (salary will be added separately)
+          this.recalculateStaffBalance(staff.staffId);
+        },
+        error: () => {
+          // Keep zeros on error
+        }
+      });
+
+      // 2. Fetch Calculated Salary (Attendance-based)
+      this.http.get<any>(
+        `https://hotel-api.duckdns.org/api/admin/staff/calculate-salary?staffId=${staff.staffId}&month=${this.currentMonth}&year=${this.currentYear}`,
+        { headers }
+      ).subscribe({
+        next: (res) => {
+          const calculatedSalary = res.calculatedSalary || 0;
+
+          // Update staff map with salary
+          this.staffKhatabookMap[staff.staffId].salary = calculatedSalary;
+
+          // Recalculate balance with salary included
+          this.recalculateStaffBalance(staff.staffId);
+
+          completedCount++;
+          if (completedCount >= totalStaff) {
+            this.recalculateOverallTotals();
+            this.loadingKhatabook = false;
+          }
+        },
+        error: () => {
+          completedCount++;
+          if (completedCount >= totalStaff) {
+            this.recalculateOverallTotals();
+            this.loadingKhatabook = false;
+          }
+        }
+      });
+    });
+  }
+
+  // Recalculate single staff balance
+  recalculateStaffBalance(staffId: string) {
+    const data = this.staffKhatabookMap[staffId];
+    if (data) {
+      // Total Taken = Manual Taken + Attendance Salary
+      const totalTaken = data.taken + data.salary;
+      // Balance = Total Taken - Manual Given
+      data.balance = totalTaken - data.given;
+    }
+  }
+
+  // Recalculate overall totals from all staff
+  recalculateOverallTotals() {
+    this.totalTakenAll = 0;
+    this.totalGivenAll = 0;
+
+    Object.values(this.staffKhatabookMap).forEach((data) => {
+      // Total Taken = Manual Taken + Salary
+      this.totalTakenAll += data.taken + data.salary;
+      this.totalGivenAll += data.given;
+    });
+
+    this.overallBalance = this.totalTakenAll - this.totalGivenAll;
+  }
+
+  // Helper to get staff balance for template (includes salary)
+  getStaffKhatabook(staffId: string) {
+    const data = this.staffKhatabookMap[staffId] || { taken: 0, given: 0, salary: 0, balance: 0 };
+    // Return total taken (manual + salary)
+    return {
+      taken: data.taken + data.salary, // Manual Taken + Attendance Salary
+      given: data.given,
+      balance: data.balance
+    };
   }
 
   searchStaff() {
@@ -193,17 +336,26 @@ export class AdminComponent {
     fd.append('role', 'staff');
     fd.append('branchName', this.newStaff.branchName);
     fd.append('salary', this.newStaff.salary);
+
     if (this.newStaff.DOB) fd.append('DOB', this.newStaff.DOB);
+
     fd.append('address[city]', this.newStaff.address.city || '');
     fd.append('address[state]', this.newStaff.address.state || '');
     fd.append('address[country]', '');
 
-    if (this.profileImageFile) fd.append('profileImage', this.profileImageFile);
-    if (this.idProofFrontFile) {
-      fd.append('IdProofFront', this.idProofFrontFile);
-      fd.append('IdProofImage', this.idProofFrontFile); // Send to original key for backend triggers
+    // ✅ Profile Image
+    if (this.profileImageFile) {
+      fd.append('profileImage', this.profileImageFile);
     }
-    if (this.idProofBackFile) fd.append('IdProofBack', this.idProofBackFile);
+
+    // ✅ ID Proof Images (FRONT + BACK same key)
+    if (this.idProofFrontFile) {
+      fd.append('IdProofImage', this.idProofFrontFile);
+    }
+
+    if (this.idProofBackFile) {
+      fd.append('IdProofImage', this.idProofBackFile);
+    }
 
     this.http.post(
       'https://hotel-api.duckdns.org/api/admin/staff/add',
@@ -215,11 +367,13 @@ export class AdminComponent {
         this.closeModal();
         this.showToast('success', '✓ Staff Added Successfully!');
       },
-      error: () => {
+      error: (err) => {
+        console.error(err);
         this.showToast('error', '✗ Failed to Add Staff');
       }
     });
   }
+
 
   updateStaff() {
     console.log(' Update Staff Clicked');

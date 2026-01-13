@@ -5,13 +5,13 @@
         <div class="summary-card taken">
             <h4>Total Taken</h4>
             <p>₹ {{ totalTakenCheque | number }}</p>
-             <span>Panding Cheque</span>
+            <span>Panding Cheque</span>
         </div>
 
         <div class="summary-card given">
             <h4>Total Given</h4>
             <p>₹ {{ totalGivenCheque | number }}</p>
-             <span>Clear Cheque</span>
+            <span>Clear Cheque</span>
         </div>
 
         <div class="summary-card balance">
@@ -40,45 +40,39 @@
         </select>
     </div>
 
-    <!-- ===== LISTS ===== -->
-    <div class="lists-grid">
+    <!-- ===== LEDGER LIST ===== -->
+    <div class="ledger-container">
+        <div class="ledger-header">
+            <h3>CHEQUE LEDGER (KHATABOOK VIEW)</h3>
+        </div>
 
-        <!-- TAKEN LIST -->
-        <div class="list-card taken">
-            <h3>TAKEN CHEQUES</h3>
-
-            <div class="cheque-item" *ngFor="let item of filteredCheques" [hidden]="item.type !== 'TAKEN'">
-
-                <div class="left">
+        <div class="ledger-item" *ngFor="let item of filteredCheques">
+            <div class="info">
+                <div class="main">
                     <h4>{{ item.supplierName }}</h4>
+                    <span class="badge" [class.taken]="item.type === 'TAKEN'" [class.given]="item.type === 'GIVEN'">
+                        {{ item.type }}
+                    </span>
+                </div>
+                <div class="sub">
                     <p>{{ item.branch }}</p>
                     <small>Return: {{ item.returnDate | date:'dd MMM yyyy' }}</small>
                 </div>
+            </div>
 
-                <div class="right">
-                    <span class="amount red">₹ {{ item.amount | number }}</span>
+            <div class="ledger-details">
+                <div class="txn-amount" [class.red]="item.type === 'TAKEN'" [class.green]="item.type === 'GIVEN'">
+                    <span class="symbol">{{ item.type === 'TAKEN' ? '+' : '-' }}</span>
+                    ₹{{ item.amount | number }}
+                </div>
+                <div class="running-bal">
+                    <label>Balance</label>
+                    <span [class.red]="item.runningBalance > 0" [class.green]="item.runningBalance < 0">
+                        ₹{{ item.runningBalance | number }}
+                    </span>
                 </div>
             </div>
         </div>
-
-        <!-- GIVEN LIST -->
-        <div class="list-card given">
-            <h3>GIVEN CHEQUES</h3>
-
-            <div class="cheque-item" *ngFor="let item of filteredCheques" [hidden]="item.type !== 'GIVEN'">
-
-                <div class="left">
-                    <h4>{{ item.supplierName }}</h4>
-                    <p>{{ item.branch }}</p>
-                    <small>Return: {{ item.returnDate | date:'dd MMM yyyy' }}</small>
-                </div>
-
-                <div class="right">
-                    <span class="amount green">₹ {{ item.amount | number }}</span>
-                </div>
-            </div>
-        </div>
-
     </div>
 
 </div>

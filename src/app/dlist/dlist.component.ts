@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-dlist',
@@ -27,17 +28,9 @@ export class DlistComponent implements OnInit {
   editModal = false;
   editCommission: any = {};
 
-  // 🔹 Month / Year Filter
-  selectedMonth: string | number = '';
-  selectedYear: string | number = '';
-
-  months = [
-    'January', 'February', 'March', 'April',
-    'May', 'June', 'July', 'August',
-    'September', 'October', 'November', 'December'
-  ];
-
-  years: number[] = [];
+  // 🔹 Date Filter
+  startDate: string = '';
+  endDate: string = '';
 
   // 🔹 Toast
   toast = {
@@ -62,8 +55,7 @@ export class DlistComponent implements OnInit {
 
   ngOnInit(): void {
     this.driverId = this.route.snapshot.paramMap.get('id') || '';
-    this.getDriver();
-    this.getCommissionEntries();
+    this.loadDriverAndCommissions();
   }
 
   getHeaders() {
@@ -76,60 +68,50 @@ export class DlistComponent implements OnInit {
     });
   }
 
-  // 🔹 Driver Detail
-  getDriver() {
-    this.http.get<any>(
+  // 🔹 Load Driver + Commissions together using forkJoin
+  loadDriverAndCommissions() {
+    const driver$ = this.http.get<any>(
       'https://hotel-api.duckdns.org/api/admin/get-drivers',
       { headers: this.getHeaders() }
-    ).subscribe({
-      next: (res) => {
-        this.driver = res.drivers.find((d: any) => d._id === this.driverId);
-        if (!this.driver) this.router.navigate(['/dlist']);
-      },
-      error: (err) => {
-        if (err.status === 401) this.router.navigate(['/login']);
-      }
-    });
-  }
+    );
 
-  // 🔹 Get Commission Entries
-  getCommissionEntries() {
-    this.http.get<any>(
+    const commissions$ = this.http.get<any>(
       'https://hotel-api.duckdns.org/api/admin/get-driver-commision-entries',
       { headers: this.getHeaders() }
-    ).subscribe({
-      next: (res) => {
-        const entries = res.entries || [];
+    );
 
-        // 🔥 Defensive filtering: Handle both MongoDB ObjectId AND driver codes
+    forkJoin([driver$, commissions$]).subscribe({
+      next: ([driverRes, commissionRes]) => {
+        // 1. First, get the driver (guaranteed to be available)
+        this.driver = driverRes.drivers.find((d: any) => d._id === this.driverId);
+        if (!this.driver) {
+          this.router.navigate(['/dlist']);
+          return;
+        }
+
+        // 2. Now filter commissions (driver is guaranteed to be loaded)
+        const entries = commissionRes.entries || [];
         this.allCommissions = entries.filter((e: any) => {
           // Primary check: driverId matches MongoDB _id (correct format)
-          const primaryMatch = e.driverId === this.driverId;
+          const matchById = e.driverId === this.driver._id;
 
           // Fallback check: driverId might contain driver code in old records
-          const fallbackMatch = this.driver && e.driverId === this.driver.driverId;
+          const matchByCode = e.driverId === this.driver.driverId;
 
           // 🚨 Log warning if fallback is used (indicates old/wrong data)
-          if (!primaryMatch && fallbackMatch) {
+          if (!matchById && matchByCode) {
             console.warn('⚠️ Found commission entry with driver code instead of ObjectId:', {
               entryId: e.entryId,
               driverId: e.driverId,
-              expectedObjectId: this.driverId,
-              driverCode: this.driver?.driverId
+              expectedObjectId: this.driver._id,
+              driverCode: this.driver.driverId
             });
           }
 
-          return primaryMatch || fallbackMatch;
+          return matchById || matchByCode;
         });
 
         this.commissions = [...this.allCommissions];
-
-        // 🔥 Auto generate year list
-        const yearSet = new Set<number>();
-        this.allCommissions.forEach(e => {
-          yearSet.add(new Date(e.entryDate).getFullYear());
-        });
-        this.years = Array.from(yearSet).sort((a, b) => b - a);
 
         // 🔥 Calculate branch statistics
         this.calculateBranchStats();
@@ -137,9 +119,12 @@ export class DlistComponent implements OnInit {
         // 🔍 Debug log to verify data consistency
         console.log('✅ Commission entries loaded:', {
           total: this.allCommissions.length,
-          driverMongoId: this.driverId,
-          driverCode: this.driver?.driverId
+          driverMongoId: this.driver._id,
+          driverCode: this.driver.driverId
         });
+      },
+      error: (err) => {
+        if (err.status === 401) this.router.navigate(['/login']);
       }
     });
   }
@@ -165,75 +150,80 @@ export class DlistComponent implements OnInit {
     });
   }
 
-  // 🔹 Month + Year Filter
-  filterByMonthYear() {
-    this.commissions = this.allCommissions.filter(entry => {
-      const d = new Date(entry.entryDate);
+  // 🔹 Date Range Filter
+  filterByDateRange() {
+    if (!this.startDate && !this.endDate) {
+      this.commissions = [...this.allCommissions];
+    } else {
+      this.commissions = this.allCommissions.filter(entry => {
+        const entryDate = new Date(entry.entryDate || entry.createdAt).getTime();
 
-      const monthMatch =
-        this.selectedMonth === '' ||
-        d.getMonth() === Number(this.selectedMonth);
+        // Reset hours for date-only comparison
+        const start = this.startDate ? new Date(this.startDate).setHours(0, 0, 0, 0) : null;
+        const end = this.endDate ? new Date(this.endDate).setHours(23, 59, 59, 999) : null;
 
-      const yearMatch =
-        this.selectedYear === '' ||
-        d.getFullYear() === Number(this.selectedYear);
+        const startMatch = !start || entryDate >= start;
+        const endMatch = !end || entryDate <= end;
 
-      return monthMatch && yearMatch;
-    });
+        return startMatch && endMatch;
+      });
+    }
 
     // 🔥 Update branch stats after filtering
     this.calculateBranchStats();
   }
 
-  // 🔹 Add Commission
+  // 🔹 Reset Filters
+  resetFilters() {
+    this.startDate = '';
+    this.endDate = '';
+    this.commissions = [...this.allCommissions];
+    this.calculateBranchStats();
+  }
   addCommission() {
     if (!this.driver) return;
 
     const payload = {
-      driverId: this.driverId, // ✅ This should be MongoDB _id
-      partyAmount: this.newCommission.partyAmount,
-      driverCommisionAmount: this.newCommission.commissionAmount,
+      driverId: this.driver.driverId, // ✅ DRIVER CODE
+      partyAmount: Number(this.newCommission.partyAmount),
+      driverCommisionAmount: Number(this.newCommission.driverCommisionAmount),
       status: this.newCommission.status,
       description: this.newCommission.description,
     };
 
-    // 🔍 Debug: Verify we're sending the correct ID
-    console.log('📤 Adding commission with payload:', {
-      driverId: payload.driverId,
-      driverCode: this.driver.driverId,
-      partyAmount: payload.partyAmount
-    });
+    console.log('📤 Correct Payload:', payload);
 
     this.http.post(
       'https://hotel-api.duckdns.org/api/admin/add-driver-commision-entry',
       payload,
       { headers: this.getHeaders() }
     ).subscribe({
-      next: (res: any) => {
-        if (res.entry) {
-          // 🔍 Verify the response contains correct driverId format
-          if (res.entry.driverId !== this.driverId) {
-            console.warn('⚠️ Backend returned different driverId format!', {
-              sent: this.driverId,
-              received: res.entry.driverId
-            });
-          }
-
-          this.allCommissions.unshift(res.entry);
-          this.filterByMonthYear();
-        }
-        this.newCommission = {
-          partyAmount: '',
-          commissionAmount: '',
-          status: 'Pending',
-          description: '',
-        };
+      next: () => {
+        this.resetForm();
+        this.loadDriverAndCommissions();
         this.showToast('success', 'Commission Entry Added Successfully!');
       },
-      error: () => {
-        this.showToast('error', 'Failed to add entry!');
+      error: (err) => {
+        if (err.status === 500) {
+          // 🔥 entry save ho chuki hoti hai
+          this.resetForm();
+          this.loadDriverAndCommissions();
+          this.showToast('success', 'Entry added (server response issue)');
+        } else {
+          this.showToast('error', 'Failed to add entry!');
+        }
       }
     });
+
+  }
+
+  resetForm() {
+    this.newCommission = {
+      partyAmount: '',
+      driverCommisionAmount: '',
+      status: 'Pending',
+      description: '',
+    };
   }
 
   // 🔹 Edit Commission
@@ -266,7 +256,7 @@ export class DlistComponent implements OnInit {
     ).subscribe({
       next: (res: any) => {
         this.closeEditModal();
-        this.getCommissionEntries();
+        this.loadDriverAndCommissions();
         this.showToast("success", "Commission Updated Successfully!");
       },
       error: () => {

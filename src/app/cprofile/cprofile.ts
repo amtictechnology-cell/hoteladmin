@@ -41,23 +41,8 @@ export class Cprofile implements OnInit {
   selectedBranch: string = 'ALL';
 
   /* ================= DATE FILTER ================= */
-  selectedMonth: string = 'ALL';
-  selectedYear: string = 'ALL';
-  months = [
-    { value: '0', label: 'January' },
-    { value: '1', label: 'February' },
-    { value: '2', label: 'March' },
-    { value: '3', label: 'April' },
-    { value: '4', label: 'May' },
-    { value: '5', label: 'June' },
-    { value: '6', label: 'July' },
-    { value: '7', label: 'August' },
-    { value: '8', label: 'September' },
-    { value: '9', label: 'October' },
-    { value: '10', label: 'November' },
-    { value: '11', label: 'December' }
-  ];
-  years: number[] = [];
+  startDate: string = '';
+  endDate: string = '';
 
   /* ================= TOAST ================= */
   toast = {
@@ -77,19 +62,10 @@ export class Cprofile implements OnInit {
 
   ngOnInit(): void {
     this.id = this.route.snapshot.paramMap.get('id') || '';
-    this.generateYears();
     this.getCustomer();
     this.getTransactionRecord();
   }
 
-  /* ================= GENERATE YEARS ================= */
-  generateYears() {
-    const currentYear = new Date().getFullYear();
-    this.years = [];
-    for (let i = 0; i < 5; i++) {
-      this.years.push(currentYear - i);
-    }
-  }
 
   /* ================= HEADERS ================= */
   getHeaders() {
@@ -171,19 +147,19 @@ export class Cprofile implements OnInit {
       );
     }
 
-    // Step 3: Apply date filter (month and year)
-    if (this.selectedMonth !== 'ALL' || this.selectedYear !== 'ALL') {
+    // Step 3: Apply date filter (start date and end date)
+    if (this.startDate || this.endDate) {
+      const start = this.startDate ? new Date(this.startDate).setHours(0, 0, 0, 0) : null;
+      const end = this.endDate ? new Date(this.endDate).setHours(23, 59, 59, 999) : null;
+
       allTransactions = allTransactions.filter(x => {
         if (!x.updatedAt) return false;
+        const txnDate = new Date(x.updatedAt).getTime();
 
-        const txnDate = new Date(x.updatedAt);
-        const txnMonth = txnDate.getMonth();
-        const txnYear = txnDate.getFullYear();
+        const matchesStart = !start || txnDate >= start;
+        const matchesEnd = !end || txnDate <= end;
 
-        let matchesMonth = this.selectedMonth === 'ALL' || txnMonth === Number(this.selectedMonth);
-        let matchesYear = this.selectedYear === 'ALL' || txnYear === Number(this.selectedYear);
-
-        return matchesMonth && matchesYear;
+        return matchesStart && matchesEnd;
       });
     }
 
@@ -208,8 +184,8 @@ export class Cprofile implements OnInit {
 
   resetFilters() {
     this.selectedBranch = 'ALL';
-    this.selectedMonth = 'ALL';
-    this.selectedYear = 'ALL';
+    this.startDate = '';
+    this.endDate = '';
     this.applyFilters();
   }
 

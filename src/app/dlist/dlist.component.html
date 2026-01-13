@@ -22,8 +22,9 @@
         <input type="number" [(ngModel)]="newCommission.partyAmount" name="partyAmount" required class="form-control" />
 
         <label>Commission Amount:</label>
-        <input type="number" [(ngModel)]="newCommission.commissionAmount" name="commissionAmount" required
+        <input type="number" [(ngModel)]="newCommission.driverCommisionAmount" name="driverCommisionAmount" required
           class="form-control" />
+
         <label>Description:</label>
         <textarea [(ngModel)]="newCommission.description" name="description" class="form-control" rows="2"></textarea>
 
@@ -39,19 +40,19 @@
 
   </div>
   <div class="filter-bar">
-    <select [(ngModel)]="selectedMonth" (change)="filterByMonthYear()">
-      <option value="">All Months</option>
-      <option *ngFor="let m of months; let i = index" [value]="i">
-        {{ m }}
-      </option>
-    </select>
-
-    <select [(ngModel)]="selectedYear" (change)="filterByMonthYear()">
-      <option value="">All Years</option>
-      <option *ngFor="let y of years" [value]="y">
-        {{ y }}
-      </option>
-    </select>
+    <div class="date-filter">
+      <div class="filter-group">
+        <label>From:</label>
+        <input type="date" [(ngModel)]="startDate" (change)="filterByDateRange()" class="date-input" />
+      </div>
+      <div class="filter-group">
+        <label>To:</label>
+        <input type="date" [(ngModel)]="endDate" (change)="filterByDateRange()" class="date-input" />
+      </div>
+      <button class="btn-reset" (click)="resetFilters()" *ngIf="startDate || endDate">
+        <span>🔄</span> Reset
+      </button>
+    </div>
   </div>
 
   <!-- � Branch Statistics Cards -->
@@ -88,16 +89,16 @@
       </thead>
       <tbody>
         <tr *ngFor="let c of commissions">
-          <td>₹{{ c.partyAmount }}</td>
-          <td>₹{{ c.driverCommisionAmount }}</td>
-          <td>{{ c.status }}</td>
-          <td>{{ c.description || '-' }}</td>
-          <td>{{ c.createdAt | date:'dd/MM/yyyy, h:mm a' }}</td>
-          <td>{{ c.branchName || '-' }}</td>
-          <td>
+          <td data-label="Party Amount">₹{{ c.partyAmount }}</td>
+          <td data-label="Commission Amount">₹{{ c.driverCommisionAmount }}</td>
+          <td data-label="Status">{{ c.status }}</td>
+          <td data-label="Description">{{ c.description || '-' }}</td>
+          <td data-label="Date">{{ c.createdAt | date:'dd/MM/yyyy, h:mm a' }}</td>
+          <td data-label="Branch">{{ c.branchName || '-' }}</td>
+          <td data-label="Edit">
             <button class="btn-edit" (click)="openEditModal(c)">Edit</button>
           </td>
-          <td> <button class="btn-green" (click)="sendWhatsAppReminder(c)">WhatsApp</button></td>
+          <td data-label="WhatsApp"> <button class="btn-green" (click)="sendWhatsAppReminder(c)">WhatsApp</button></td>
         </tr>
       </tbody>
     </table>

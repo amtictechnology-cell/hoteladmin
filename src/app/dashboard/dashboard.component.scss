@@ -1,34 +1,52 @@
+.logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 20px;
+}
+
 .dashboard {
   display: flex;
   justify-content: center;
   gap: 20px;
-  padding: 40px;
+  padding: 20px;
   background: linear-gradient(135deg, #fcfeff, #ffffff, #ffffff);
   flex-wrap: wrap;
 }
 
-.logo {
+.logo,
+.logo-2 {
   display: flex;
   justify-content: center;
-  margin-top: 20px;
+  margin: 10px;
 }
 
 .logo-img {
-  height: 450px;
-  width: 440px;
+  height: auto;
+  width: 100%;
+  max-width: 350px;
+}
+
+.logo-img-2 {
+  height: auto;
+  width: 100%;
+  max-width: 300px;
 }
 
 .stat-card {
   background: rgb(51, 1, 1);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 12px;
-  width: 320px;
-  padding: 20px;
-  gap: 10px;
+  flex: 1 1 300px;
+  max-width: 350px;
+  padding: 25px;
   color: #fff;
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  text-align: center;
 }
 
 .stat-card:hover {
@@ -39,26 +57,56 @@
 .card-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 15px;
-  color: #9aa0b0;
-  margin-bottom: 10px;
+  justify-content: center;
+  gap: 10px;
+  font-size: 16px;
+  color: #c5cad6;
+  margin-bottom: 15px;
 }
 
 .card-header i {
   color: #d4ae05;
+  font-size: 1.4rem;
 }
 
-.stat-card h2 {
-  font-size: 32px;
-  margin: 0;
+.stat-card h3 {
+  font-size: 28px;
+  margin: 10px 0 0;
   font-weight: 700;
+  color: #ffffff;
 }
 
-.stat-card p {
-  font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-top: 4px;
-  color: #9aa0b0;
+/* === Responsive Adjustments === */
+@media (max-width: 768px) {
+  .logo-container {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .logo-img,
+  .logo-img-2 {
+    max-width: 250px;
+  }
+
+  .dashboard {
+    padding: 15px;
+    gap: 15px;
+  }
+
+  .stat-card {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+
+  .logo-img,
+  .logo-img-2 {
+    max-width: 180px;
+  }
+
+  .stat-card h3 {
+    font-size: 24px;
+  }
 }

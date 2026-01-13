@@ -1,0 +1,138 @@
+/* ---------- HEADER ---------- */
+.notes-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+}
+
+/* ---------- ADD BUTTON ---------- */
+.add-btn {
+  background: #420000;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+/* ---------- NOTES LIST ---------- */
+.notes-list {
+  padding: 10px;
+}
+
+.note-card {
+  background: #fff0f0;
+  color: #020000;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.note-date {
+  font-size: 12px;
+  color: #504f4f;
+  margin-bottom: 6px;
+}
+
+.note-text {
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.edit-btn {
+  background: transparent;
+  color: #380202;
+  border: none;
+  cursor: pointer;
+}
+
+/* FULLSCREEN BACKDROP */
+.custom-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999999;
+  backdrop-filter: blur(4px);
+  /* Modern blur effect */
+}
+
+/* MODAL BOX */
+.custom-modal {
+  background: #ffffff;
+  color: #333333;
+  /* Ensure text is dark and visible */
+  width: 90%;
+  max-width: 450px;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  position: relative;
+  z-index: 1000000;
+  animation: modalAppear 0.3s ease-out;
+}
+
+@keyframes modalAppear {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* TEXTAREA */
+.custom-modal textarea {
+  width: 100%;
+  height: 150px;
+  margin-top: 15px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  outline: none;
+  resize: none;
+  font-family: inherit;
+  font-size: 14px;
+  color: #333;
+}
+
+/* BUTTONS */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.cancel {
+  background: #ffe9e9;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  color: #555;
+}
+
+.save {
+  background: #440000;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #fffcfc;
+}
+
+.save:hover {
+  background: #fdd835;
+}

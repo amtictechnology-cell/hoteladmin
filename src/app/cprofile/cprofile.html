@@ -30,22 +30,16 @@
   <!-- ===== DATE FILTER ===== -->
   <div class="date-filter">
     <div class="filter-group">
-      <label>Month:</label>
-      <select [(ngModel)]="selectedMonth" (change)="applyFilters()">
-        <option value="ALL">All Months</option>
-        <option *ngFor="let month of months" [value]="month.value">{{ month.label }}</option>
-      </select>
+      <label>From:</label>
+      <input type="date" [(ngModel)]="startDate" (change)="applyFilters()" class="date-input" />
     </div>
-
     <div class="filter-group">
-      <label>Year:</label>
-      <select [(ngModel)]="selectedYear" (change)="applyFilters()">
-        <option value="ALL">All Years</option>
-        <option *ngFor="let year of years" [value]="year">{{ year }}</option>
-      </select>
+      <label>To:</label>
+      <input type="date" [(ngModel)]="endDate" (change)="applyFilters()" class="date-input" />
     </div>
-
-    <button class="reset-btn" (click)="resetFilters()">Reset Filters</button>
+    <button class="btn-reset" (click)="resetFilters()" *ngIf="startDate || endDate">
+      <span>🔄</span> Reset
+    </button>
   </div>
 
   <!-- ===== ACTION BUTTONS ===== -->

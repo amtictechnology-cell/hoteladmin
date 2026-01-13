@@ -6,6 +6,7 @@
     <input type="text" placeholder="Search by name or mobile..." [(ngModel)]="searchTerm" (input)="searchStaff()" />
     <button (click)="openAddModal()">+ Add Staff</button>
   </div>
+
   <div class="staff-summary-buttons">
     <button [class.active]="selectedBranch === ''" (click)="filterByBranch('')">
       Total Staff ({{ totalStaff }})
@@ -24,6 +25,31 @@
     </button>
   </div>
 
+  <!-- KHATABOOK SUMMARY CARDS -->
+  <div class="khatabook-summary-cards">
+    <!-- <div class="summary-card taken">
+      <div class="card-icon"></div>
+      <div class="card-info">
+        <span class="card-label">Total Taken (All Staff)</span>
+        <span class="card-value red">₹ {{ totalTakenAll | number }}</span>
+      </div>
+    </div>
+    <div class="summary-card given">
+      <div class="card-icon"></div>
+      <div class="card-info">
+        <span class="card-label">Total Given (All Staff)</span>
+        <span class="card-value green">₹ {{ totalGivenAll | number }}</span>
+      </div>
+    </div> -->
+    <div class="summary-card balance">
+      <div class="card-info">
+        <span class="card-label">Final Balance</span>
+        <span class="card-value" [ngClass]="overallBalance >= 0 ? 'red' : 'green'">₹ {{ overallBalance | number
+          }}</span>
+      </div>
+    </div>
+  </div>
+
 
   <table>
     <thead>
@@ -32,23 +58,35 @@
         <th>Name</th>
         <th>Mobile</th>
         <th>Branch</th>
-        <th>Aadhar</th>
-        <th>City</th>
-        <th>DOB</th>
+        <!-- <th class="text-right">Taken</th>
+        <th class="text-right">Given</th> -->
+        <th class="text-right">Balance</th>
         <th>Action</th>
       </tr>
     </thead>
 
     <tbody>
       <tr *ngFor="let s of filteredStaff; let i = index" (click)="goToProfile(s.staffId)">
-        <td>{{ i + 1 }}</td>
-        <td>{{ s.firstName }} {{ s.lastName }}</td>
-        <td>{{ s.mobile }}</td>
-        <td>{{ s.branchName }}</td>
-        <td>{{ s.adharNumber }}</td>
-        <td>{{ s.address?.city }}</td>
-        <td>{{ s.DOB | date:'dd/MM/yyyy' }}</td>
-        <td>
+        <td data-label="SR">{{ i + 1 }}</td>
+        <td data-label="Name">
+          <div class="staff-name-cell">
+            <span class="name">{{ s.firstName }} {{ s.lastName }}</span>
+          </div>
+        </td>
+        <td data-label="Mobile">{{ s.mobile }}</td>
+        <td data-label="Branch"><span class="branch-badge">{{ s.branchName }}</span></td>
+        <!-- <td data-label="Taken" class="text-right">
+          <span class="amount-taken">₹ {{ getStaffKhatabook(s.staffId).taken | number }}</span>
+        </td>
+        <td data-label="Given" class="text-right">
+          <span class="amount-given">₹ {{ getStaffKhatabook(s.staffId).given | number }}</span>
+        </td> -->
+        <td data-label="Balance" class="text-right">
+          <span class="amount-balance" [ngClass]="getStaffKhatabook(s.staffId).balance >= 0 ? 'red' : 'green'">
+            ₹ {{ getStaffKhatabook(s.staffId).balance | number }}
+          </span>
+        </td>
+        <td data-label="Action">
           <button class="edit-btn" (click)="openEditModal(s); $event.stopPropagation()">
             Edit
           </button>

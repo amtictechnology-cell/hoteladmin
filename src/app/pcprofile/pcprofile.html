@@ -45,12 +45,17 @@
           <select [(ngModel)]="entry.paymentMode" class="modern-select">
             <option value="cash">Cash</option>
             <option value="online">Online</option>
-            <option value="cheque">Cheque</option>
-            <option value="upi">UPI</option>
-            <option value="bank">Bank Transfer</option>
           </select>
           <label class="select-label">Payment Mode</label>
         </div>
+        <div class="form-group">
+          <select [(ngModel)]="entry.status" class="modern-select">
+            <option value="Pending">Pending</option>
+            <option value="Approved">Approved</option>
+          </select>
+          <label class="select-label">Payment Status</label>
+        </div>
+
         <div class="form-group full-width">
           <textarea [(ngModel)]="entry.description" placeholder="Short internal note or description..."></textarea>
         </div>
@@ -82,6 +87,44 @@
       </div>
     </div>
   </div>
+  <!-- FILTER SECTION -->
+  <div class="filter-section">
+    <!-- Branch Filter Buttons -->
+    <div class="filter-bar">
+      <button *ngFor="let b of branches" (click)="filterByBranch(b)" [class.active]="selectedBranch === b">
+        {{ b }}
+      </button>
+      <button (click)="filterByBranch('')" [class.active]="selectedBranch === ''" class="clear">
+        All Branches
+      </button>
+    </div>
+
+    <!-- Date Filters Row -->
+    <div class="date-filters">
+      <!-- Month Filter -->
+      <select class="date-filter month-filter" (change)="onMonthChange($event)" [value]="selectedMonth">
+        <option value="">All Months</option>
+        <option *ngFor="let m of months; let i = index" [value]="i">
+          {{ m }}
+        </option>
+      </select>
+
+      <!-- Year Filter -->
+      <select class="date-filter year-filter" (change)="onYearChange($event)" [value]="selectedYear">
+        <option value="">All Years</option>
+        <option *ngFor="let y of years" [value]="y">
+          {{ y }}
+        </option>
+      </select>
+
+      <!-- Reset All Filters Button -->
+      <button class="reset-filters-btn" (click)="resetFilters()"
+        *ngIf="selectedBranch || selectedMonth || selectedYear">
+        ✕ Clear Filters
+      </button>
+    </div>
+  </div>
+
 
   <!-- ACTIVITY LOG -->
   <div class="activity-section">
@@ -104,6 +147,9 @@
           <div class="entry-meta">
             <span class="badge mode">{{ e.paymentMode | uppercase }}</span>
             <span class="badge status" [class]="e.status.toLowerCase()">{{ e.status }}</span>
+            <span class="badge branch" *ngIf="e.hotelBranchName">
+              🏢 {{ e.hotelBranchName }}
+            </span>
           </div>
         </div>
         <div class="card-right">
@@ -161,6 +207,15 @@
           </select>
           <label class="select-label">Payment Mode</label>
         </div>
+        <div class="form-group full-width">
+          <select [(ngModel)]="editForm.status" class="modern-select">
+            <option value="Pending">Pending</option>
+            <option value="Approved">Approved</option>
+          </select>
+          <label class="select-label">Payment Status</label>
+        </div>
+
+
       </div>
     </div>
 

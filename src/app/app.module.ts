@@ -24,6 +24,7 @@ import { Pcustomer } from './pcustomer/pcustomer';
 import { Pcprofile } from './pcprofile/pcprofile';
 import { AllCheque } from './all-cheque/all-cheque';
 import { Logout } from './logout/logout';
+import { Notes } from './notes/notes';
 
 
 
@@ -50,7 +51,8 @@ import { Logout } from './logout/logout';
     Pcustomer,
     Pcprofile,
     AllCheque,
-    Logout
+    Logout,
+    Notes
 
   ],
   imports: [
@@ -61,7 +63,7 @@ import { Logout } from './logout/logout';
     ReactiveFormsModule,
     CommonModule
   ],
-  providers: [ ],
+  providers: [],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

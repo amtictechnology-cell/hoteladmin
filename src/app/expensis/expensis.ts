@@ -455,6 +455,15 @@ export class Expensis {
     this.deleteType = null;
   }
 
+  get combinedTransactions() {
+    const earnings = this.hotelEarnings.map(e => ({ ...e, type: 'earning', date: e.earningDate || e.dateTime }));
+    const expenses = this.hotelExpenses.map(e => ({ ...e, type: 'expense', date: e.expenseDate || e.dateTime }));
+
+    return [...earnings, ...expenses].sort((a, b) => {
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    });
+  }
+
   executeDelete() {
     if (!this.deleteTarget || !this.deleteType) return;
 

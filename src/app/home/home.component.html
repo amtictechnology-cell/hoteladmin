@@ -1,49 +1,68 @@
 <div class="dashboard-container">
-  <aside class="sidebar">
+  <div class="sidebar-backdrop" *ngIf="isSidebarOpen" (click)="closeSidebar()"></div>
+
+  <aside class="sidebar" [class.active]="isSidebarOpen">
     <div class="logo">
       <h2>Hotel Admin</h2>
+      <button class="close-sidebar" (click)="closeSidebar()">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
 
     <ul class="menu">
-      <ul class="menu">
-        <li [routerLink]="['/home']" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-          <i class="fas fa-tachometer-alt"></i> Dashboard
-        </li>
-        <li [routerLink]="['/home/dlist']" routerLinkActive="active"> <i class="fas fa-car"></i> Driver Management</li>
-        <li [routerLink]="['/home/all-driver']" routerLinkActive="active"> <i class="fas fa-users"></i>All Driver Entery
-        </li>
-        <li [routerLink]="['/home/admin']" routerLinkActive="active"> <i class="fas fa-user-tie"></i>Staff Management
-        </li>
-        <li [routerLink]="['/home/attendance']" routerLinkActive="active"> <i class="fas fa-calendar-check"></i>Staff
-          Attendance</li>
-        <li [routerLink]="['/home/expensis']" routerLinkActive="active"> <i class="fas fa-money-bill-wave"></i>Hotel
-          Expensis</li>
-        <li [routerLink]="['/home/khatabook']" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-          <i class="fas fa-book"></i>Personal Khatabook
-        </li>
-
-        <li [routerLink]="['/home/pcustomer']" routerLinkActive="active"> <i class="fa-regular fa-user"></i>Regular Customer
-        </li>
-
-      </ul>
+      <li [routerLink]="['/home']" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
+        (click)="closeSidebar()">
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+      </li>
+      <li [routerLink]="['/home/dlist']" routerLinkActive="active" (click)="closeSidebar()"> <i class="fas fa-car"></i>
+        Driver Management</li>
+      <li [routerLink]="['/home/all-driver']" routerLinkActive="active" (click)="closeSidebar()"> <i
+          class="fas fa-users"></i>All Driver Entery</li>
+      <li [routerLink]="['/home/admin']" routerLinkActive="active" (click)="closeSidebar()"> <i
+          class="fas fa-user-tie"></i>Staff Management</li>
+      <li [routerLink]="['/home/attendance']" routerLinkActive="active" (click)="closeSidebar()"> <i
+          class="fas fa-calendar-check"></i>Staff Attendance</li>
+      <li [routerLink]="['/home/expensis']" routerLinkActive="active" (click)="closeSidebar()"> <i
+          class="fas fa-money-bill-wave"></i>Hotel Expensis</li>
+      <li [routerLink]="['/home/khatabook']" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }"
+        (click)="closeSidebar()">
+        <i class="fas fa-book"></i>Personal Khatabook
+      </li>
+      <li [routerLink]="['/home/pcustomer']" routerLinkActive="active" (click)="closeSidebar()"> <i
+          class="fa-regular fa-user"></i>Regular Customer</li>
     </ul>
-    <ul class="img">
-      <img src="../../assets/homelogo.png">
-    </ul>
+
+    <div class="sidebar-footer">
+      <img src="../../assets/homelogo.png" alt="Logo">
+    </div>
   </aside>
-
 
   <main class="main-content">
     <div class="topbar">
-      <h2>
-        Overview
-        <span *ngIf="branchName" class="branch-name">
-          ({{ branchName }})
-        </span>
-      </h2>
-       <p [routerLink]="['/home/logout']" class="logout"> <span class="logout-icon"><i class="fa-solid fa-arrow-right-from-bracket"></i></span>Logout</p>
+      <div class="topbar-left">
+        <button class="menu-toggle" (click)="toggleSidebar()">
+          <i class="fas fa-bars"></i>
+        </button>
+        <h2>
+          Overview
+          <span *ngIf="branchName" class="branch-name">
+            ({{ branchName }})
+          </span>
+        </h2>
+      </div>
+
+      <div class="topbar-right">
+        <p [routerLink]="['/home/notes']" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+          <i class="fas fa-book"></i>Hotel Notes
+        </p>
+        <p [routerLink]="['/home/logout']" class="notes">
+          <span class="logout-icon"><i class="fa-solid fa-arrow-right-from-bracket"></i></span>Logout
+        </p>
+      </div>
     </div>
-    <router-outlet></router-outlet>
+    <div class="content-body">
+      <router-outlet></router-outlet>
+    </div>
   </main>
 
   <div class="password-popup" *ngIf="showPasswordPopup">

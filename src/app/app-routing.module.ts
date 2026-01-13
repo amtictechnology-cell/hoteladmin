@@ -19,6 +19,9 @@ import { Pcustomer } from './pcustomer/pcustomer';
 import { Pcprofile } from './pcprofile/pcprofile';
 import { AllCheque } from './all-cheque/all-cheque';
 import { Logout } from './logout/logout';
+import { Notes } from './notes/notes';
+
+
 
 
 
@@ -46,7 +49,8 @@ const routes: Routes = [
       { path: 'pcustomer', component: Pcustomer },
       { path: 'pcprofile/:id', component: Pcprofile },
       { path: 'all-cheque', component: AllCheque },
-      { path: 'logout', component: Logout }
+      { path: 'logout', component: Logout },
+      { path: 'notes', component: Notes }
 
     ]
   }

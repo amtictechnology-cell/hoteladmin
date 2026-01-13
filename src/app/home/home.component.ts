@@ -9,6 +9,7 @@ import { Router } from '@angular/router';
 export class HomeComponent {
     hotelName: string = '';
     branchName: string = '';
+    isSidebarOpen: boolean = false;
 
 
   ngOnInit() {
@@ -28,6 +29,14 @@ export class HomeComponent {
   openPasswordPopup() {
     this.showPasswordPopup = true;
     this.passwordInput = '';
+  }
+
+  toggleSidebar() {
+    this.isSidebarOpen = !this.isSidebarOpen;
+  }
+
+  closeSidebar() {
+    this.isSidebarOpen = false;
   }
 
   closePopup() {

@@ -231,7 +231,7 @@
     </div>
   </div>
 
-  <div class="branch-row">
+  <div class="branch-row filter-scroll">
     <div class="branch-card" *ngFor="let b of branches" [class.active]="selectedBranch === b" (click)="changeBranch(b)">
       {{ b }}
     </div>
@@ -259,8 +259,45 @@
     <button class="btn-1" (click)="resetExpenseForm(); showAddExpenseForm = true">+ Add Expense</button>
   </div>
 
-  <!-- Lists -->
-  <div class="two-lists">
+  <!-- Unified Transaction List (MOBILE ONLY) -->
+  <div class="mobile-transaction-container">
+    <div class="list-header">
+      <span class="icon">🔄</span>
+      <h3>Recent Transactions</h3>
+    </div>
+    <div class="unified-list">
+      <div *ngFor="let t of combinedTransactions" class="transaction-item" [ngClass]="t.type">
+        <div class="t-left">
+          <div class="t-main">
+            <span class="t-title">{{ t.type === 'earning' ? t.earningDetails : t.expenseItems }}</span>
+            <span class="t-desc">{{ t.discription || '-' }}</span>
+          </div>
+          <div class="t-meta">
+            <span class="t-date">{{ t.date | date:'dd MMM' }} • {{ t.dateTime | date:'shortTime' }}</span>
+            <span class="t-branch">{{ t.hotelBranchName }}</span>
+          </div>
+        </div>
+        <div class="t-right">
+          <span class="t-amount">{{ t.type === 'earning' ? '+' : '-' }}₹{{ t.type === 'earning' ? t.earningAmount :
+            t.expenseAmount }}</span>
+          <div class="t-actions">
+            <img *ngIf="t.paymentScreenshoot" [src]="t.paymentScreenshoot" class="t-thumb"
+              (click)="openImage(t.paymentScreenshoot)">
+            <button class="t-delete" (click)="confirmDelete(t, t.type === 'earning' ? 'earnings' : 'expenses')">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="no-data" *ngIf="combinedTransactions.length === 0">No transactions found.</div>
+    </div>
+  </div>
+
+  <!-- Lists (DESKTOP ONLY) -->
+  <div class="two-lists desktop-only">
     <div class="list-box">
       <div class="list-header">
         <span class="icon">📈</span>

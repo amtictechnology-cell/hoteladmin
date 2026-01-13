@@ -37,6 +37,10 @@ export class Pcustomer implements OnInit {
 
   isProcessing = false;
   customers: any[] = [];
+  allCustomers: any[] = [];  // Master copy for filtering
+
+  /* ================= SEARCH ================= */
+  searchQuery: string = '';
 
   constructor(private http: HttpClient, private router: Router) { }
 
@@ -90,8 +94,37 @@ export class Pcustomer implements OnInit {
       'https://hotel-api.duckdns.org/api/admin/get/personal/customer/users',
       { headers }
     ).subscribe((res: any) => {
-      this.customers = res?.data || res;
+      this.allCustomers = res?.data || res;
+      this.applySearch(); // Apply current search filter
     });
+  }
+
+  // 🔍 SEARCH FILTER
+  applySearch() {
+    const query = this.searchQuery.trim().toLowerCase();
+
+    if (!query) {
+      this.customers = [...this.allCustomers];
+    } else {
+      this.customers = this.allCustomers.filter(c => {
+        const name = (c.name || '').toLowerCase();
+        const mobile = (c.mobile || '').toLowerCase();
+        return name.includes(query) || mobile.includes(query);
+      });
+    }
+  }
+
+  // 🔍 SEARCH INPUT HANDLER
+  onSearchInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.searchQuery = input?.value || '';
+    this.applySearch();
+  }
+
+  // 🔍 CLEAR SEARCH
+  clearSearch() {
+    this.searchQuery = '';
+    this.applySearch();
   }
 
   // 🔹 OPEN PROFILE

@@ -508,70 +508,65 @@
   gap: 15px;
   margin: 15px 0;
   padding: 15px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #f8fafc;
   border-radius: 12px;
+  border: 1px solid #e2e8f0;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-end;
 
   .filter-group {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 4px;
     flex: 1;
     min-width: 150px;
 
     label {
-      font-size: 12px;
-      font-weight: 600;
-      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      color: #64748b;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
-    select {
-      padding: 10px;
+    .date-input {
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
       border-radius: 8px;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      background: rgba(255, 255, 255, 0.95);
       font-size: 14px;
-      font-weight: 500;
-      color: #333;
-      cursor: pointer;
-      transition: all 0.3s ease;
-
-      &:hover {
-        border-color: rgba(255, 255, 255, 0.8);
-        background: #fff;
-      }
+      color: #1e293b;
+      background: white;
+      transition: all 0.2s ease;
+      width: 100%;
+      box-sizing: border-box;
 
       &:focus {
         outline: none;
-        border-color: #fff;
-        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
       }
     }
   }
 
-  .reset-btn {
-    padding: 10px 20px;
+  .btn-reset {
+    padding: 8px 16px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
     border-radius: 8px;
-    border: 2px solid #fff;
-    background: transparent;
-    color: #fff;
+    color: #475569;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 38px;
     align-self: flex-end;
 
     &:hover {
-      background: #fff;
-      color: #667eea;
-      transform: translateY(-2px);
-    }
-
-    &:active {
-      transform: translateY(0);
+      background: #e2e8f0;
+      color: #1e293b;
     }
   }
 }
@@ -797,4 +792,157 @@
   width: 40px;
   color: rgb(255, 0, 0);
   cursor: pointer;
+}
+
+/* ================= RESPONSIVE ADJUSTMENTS ================= */
+
+@media (max-width: 900px) {
+  .summary-flex {
+    flex-wrap: wrap;
+    gap: 10px;
+
+    .summary-item {
+      width: calc(50% - 5px);
+
+      &.final {
+        width: 100%;
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .profile-card {
+    margin: 10px;
+    padding: 15px;
+  }
+
+  .profile-header h2 {
+    font-size: 20px;
+  }
+
+  .summary-flex {
+    flex-direction: column;
+
+    .summary-item {
+      width: 100% !important;
+      padding: 12px;
+
+      h2 {
+        font-size: 20px;
+      }
+    }
+  }
+
+  .date-filter {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+
+    .filter-group {
+      width: 100%;
+    }
+
+    .btn-reset {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .btn-row {
+    gap: 10px;
+
+    button {
+      font-size: 14px;
+      padding: 10px;
+    }
+  }
+
+  .txn-item {
+    padding: 10px;
+  }
+
+  .txn-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+
+    .txn-right {
+      width: 100%;
+      display: flex !important;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 10px;
+      border-top: 1px solid #eee;
+    }
+  }
+
+  .img-row {
+    justify-content: flex-start;
+  }
+
+  /* Modals */
+  .popup-box {
+    width: 95%;
+    max-height: 95vh;
+  }
+
+  .modal-header {
+    padding: 15px 20px;
+
+    h3 {
+      font-size: 18px;
+    }
+  }
+
+  .modal-body {
+    padding: 15px;
+  }
+
+  .modal-footer {
+    padding: 10px 15px;
+    flex-direction: column-reverse;
+    gap: 10px;
+
+    .btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .delete-modal-content {
+    width: 90%;
+    padding: 20px;
+  }
+
+  .delete-modal-actions {
+    flex-direction: column-reverse;
+    gap: 10px;
+
+    button {
+      width: 100%;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-header p {
+    font-size: 14px;
+  }
+
+  .btn-row {
+    flex-direction: column;
+
+    button {
+      width: 100%;
+    }
+  }
+
+  .txn-row {
+    font-size: 14px;
+  }
+
+  .amount {
+    font-size: 16px;
+  }
 }

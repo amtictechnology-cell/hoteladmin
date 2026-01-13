@@ -61,7 +61,9 @@ export class Attendance {
 
   getTodayAttendance() {
     const token = localStorage.getItem('token');
-    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
 
     const today = new Date();
     const day = today.getDate();
@@ -70,36 +72,50 @@ export class Attendance {
 
     const url = `https://hotel-api.duckdns.org/api/admin/attendance/get/staff-att?month=${month}&year=${year}`;
 
+    interface TodayAttendance {
+      staffId: string;
+      attendance: string;
+      attendanceMarked: boolean;
+    }
+
     this.http.get<any>(url, { headers }).subscribe({
       next: res => {
-        if (res && res.data) {
+        if (!res || !res.data) return;
 
-          const todayData = res.data.map((staff: any) => {
+        const todayData: TodayAttendance[] = res.data.map((staff: any) => {
 
-            const todayObj = staff.attendance?.[day];
+          // 🔥 Handle number & string day key
+          const todayObj =
+            staff.attendance?.[day] ||
+            staff.attendance?.[String(day)];
 
-            const todayStatus = todayObj?.attendance ?? '—';
+          const todayStatus = todayObj?.attendance || '—';
 
-            const isMarked = todayStatus !== '—';
+          return {
+            staffId: staff.staffId,
+            attendance: todayStatus,
+            attendanceMarked: todayStatus !== '—'
+          };
+        });
 
-            return {
-              staffId: staff.staffId,
-              attendance: todayStatus,
-              attendanceMarked: isMarked
-            };
-          });
+        // 🔥 Merge with staff list
+        this.staffList = this.staffList.map(s => {
+          const found = todayData.find(
+            (a: TodayAttendance) => a.staffId === s.staffId
+          );
 
+          return found ? { ...s, ...found } : s;
+        });
 
-          this.staffList = this.staffList.map(s => {
-            const found = todayData.find((a: any) => a.staffId === s.staffId);
-            return found ? { ...s, ...found } : s;
-          });
-
-          this.filteredStaff = [...this.staffList];
-        }
+        this.filteredStaff = [...this.staffList];
+      },
+      error: err => {
+        console.error('Attendance load failed', err);
       }
     });
   }
+
+
 
   searchStaff() {
     const term = this.searchTerm.toLowerCase();

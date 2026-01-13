@@ -16,7 +16,7 @@ export class DashboardComponent {
 
   ngOnInit() {
     this.getDriversCount();
-     this.getStaffCount();
+    this.getStaffCount();
   }
 
   getToken(): string | null {

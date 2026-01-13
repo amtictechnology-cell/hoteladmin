@@ -13,13 +13,29 @@
       <span class="staff-role">{{ staffData.role | titlecase }}</span>
 
       <div class="identity-badges">
-        <div class="badge-item">
-          <span class="label">ID</span>
-          <span class="value">{{ staffData.staffId || 'N/A' }}</span>
+        <div class="id-card" (click)="openLightbox(staffData.IdProofImage?.[0])">
+          <div class="id-card-header">
+            <span>Front Side</span>
+          </div>
+          <div class="id-card-body">
+            <img *ngIf="staffData.IdProofImage?.length > 0" [src]="staffData.IdProofImage[0]" class="id-thumb"
+              alt="ID Front" />
+            <div *ngIf="!staffData.IdProofImage?.[0]" class="no-id">
+              No Image
+            </div>
+          </div>
         </div>
-        <div class="badge-item">
-          <span class="label">Joined</span>
-          <span class="value">{{ staffData.createdAt | date:'dd MMM yyyy' }}</span>
+        <div class="id-card" (click)="openLightbox(staffData.IdProofImage?.[1])">
+          <div class="id-card-header">
+            <span>Back Side</span>
+          </div>
+          <div class="id-card-body">
+            <img *ngIf="staffData.IdProofImage?.length > 1" [src]="staffData.IdProofImage[1]" class="id-thumb"
+              alt="ID Back" />
+            <div *ngIf="!staffData.IdProofImage?.[1]" class="no-id">
+              No Image
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -77,13 +93,19 @@
     <div class="register-header">
       <h3>Attendance Register</h3>
       <div class="register-filters">
-        <select (change)="onMonthChange($event)">
-          <option *ngFor="let m of [1,2,3,4,5,6,7,8,9,10,11,12]" [value]="m" [selected]="m === selectedMonth">{{ m }}
-            Month</option>
-        </select>
-        <select (change)="onYearChange($event)">
-          <option *ngFor="let y of [2024,2025,2026]" [value]="y" [selected]="y === selectedYear">{{ y }}</option>
-        </select>
+        <div class="date-filter">
+          <div class="filter-group">
+            <label>From:</label>
+            <input type="date" [(ngModel)]="startDate" (change)="onDateChange()" class="date-input" />
+          </div>
+          <div class="filter-group">
+            <label>To:</label>
+            <input type="date" [(ngModel)]="endDate" (change)="onDateChange()" class="date-input" />
+          </div>
+          <button class="btn-reset" (click)='resetFilters()'>
+            <span>🔄</span> Reset
+          </button>
+        </div>
       </div>
     </div>
 
@@ -111,7 +133,7 @@
 
   <!-- ================= SALARY SUMMARY ================= -->
   <div class="salary-summary">
-    <h3>Salary Summary ({{ selectedMonth }}/{{ selectedYear }})</h3>
+    <h3>Salary Summary ({{ startDate | date:'dd/MM/yyyy' }} - {{ endDate | date:'dd/MM/yyyy' }})</h3>
 
     <div class="salary-row">
       <span>Monthly Salary</span>
@@ -206,25 +228,40 @@
   </div>
 
   <!-- ================= ID PROOF SECTION ================= -->
-  <div class="id-proof-section">
+  <!-- <div class="id-proof-section">
     <h3>ID Proof Documents</h3>
+
     <div class="id-grid">
-      <div class="id-card" (click)="openLightbox(staffData.IdProofFront)">
-        <div class="id-card-header"><span>Front Side</span></div>
-        <div class="id-card-body">
-          <img *ngIf="staffData.IdProofFront" [src]="staffData.IdProofFront" class="id-thumb" alt="ID Front" />
-          <div *ngIf="!staffData.IdProofFront" class="no-id">No Image</div>
+      <!-- FRONT SIDE -->
+  <!-- <div class="id-card" (click)="openLightbox(staffData.IdProofImage?.[0])">
+        <div class="id-card-header">
+          <span>Front Side</span>
         </div>
-      </div>
-      <div class="id-card" (click)="openLightbox(staffData.IdProofBack)">
-        <div class="id-card-header"><span>Back Side</span></div>
         <div class="id-card-body">
-          <img *ngIf="staffData.IdProofBack" [src]="staffData.IdProofBack" class="id-thumb" alt="ID Back" />
-          <div *ngIf="!staffData.IdProofBack" class="no-id">No Image</div>
+          <img *ngIf="staffData.IdProofImage?.length > 0" [src]="staffData.IdProofImage[0]" class="id-thumb"
+            alt="ID Front" />
+          <div *ngIf="!staffData.IdProofImage?.[0]" class="no-id">
+            No Image
+          </div>
+        </div>
+      </div> -->
+
+  <!-- BACK SIDE -->
+  <!-- <div class="id-card" (click)="openLightbox(staffData.IdProofImage?.[1])">
+        <div class="id-card-header">
+          <span>Back Side</span>
+        </div>
+        <div class="id-card-body">
+          <img *ngIf="staffData.IdProofImage?.length > 1" [src]="staffData.IdProofImage[1]" class="id-thumb"
+            alt="ID Back" />
+          <div *ngIf="!staffData.IdProofImage?.[1]" class="no-id">
+            No Image
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </div>  -->
+
 
 </div>
 

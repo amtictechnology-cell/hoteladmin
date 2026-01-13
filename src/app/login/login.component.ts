@@ -19,7 +19,7 @@ export class LoginComponent implements OnInit {
     private fb: FormBuilder,
     private http: HttpClient,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({

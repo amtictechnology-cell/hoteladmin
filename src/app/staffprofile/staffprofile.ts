@@ -23,9 +23,11 @@ export class Staffprofile {
   showLightbox: boolean = false;
   lightboxImage: string = '';
 
-  // Attendance
-  selectedMonth!: number;
-  selectedYear!: number;
+  // Attendance & Filtering
+  startDate: string = '';
+  endDate: string = '';
+  selectedMonth: number = 0; // Keeping for backend fetch
+  selectedYear: number = 0;  // Keeping for backend fetch
   attendanceDays: any[] = [];
   totalPresent = 0;
   totalAbsent = 0;
@@ -70,6 +72,12 @@ export class Staffprofile {
     const today = new Date();
     this.selectedMonth = today.getMonth() + 1;
     this.selectedYear = today.getFullYear();
+
+    // Default to current month range
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    this.startDate = firstDay.toISOString().split('T')[0];
+    this.endDate = lastDay.toISOString().split('T')[0];
 
     this.staffId = this.route.snapshot.paramMap.get('id') || '';
     if (this.staffId) {
@@ -121,18 +129,29 @@ export class Staffprofile {
         this.attendanceDays = [];
         this.resetTotals();
 
-        Object.keys(staff.attendance).forEach((day: any) => {
-          const att = staff.attendance[day];
-          this.attendanceDays.push({
-            day,
-            status: att.attendance || '—',
-            time: att.time || '—'
-          });
+        const start = this.startDate ? new Date(this.startDate).setHours(0, 0, 0, 0) : null;
+        const end = this.endDate ? new Date(this.endDate).setHours(23, 59, 59, 999) : null;
 
-          if (att.attendance === 'Present') this.totalPresent++;
-          else if (att.attendance === 'Absent') this.totalAbsent++;
-          else if (att.attendance === 'HalfDay' || att.attendance === 'Half Day') this.totalHalfDay++;
-          else if (att.attendance === 'PaidLeave' || att.attendance === 'Paid Leave') this.totalPaidLeave++;
+        Object.keys(staff.attendance).forEach((day: any) => {
+          const entryDate = new Date(this.selectedYear, this.selectedMonth - 1, parseInt(day)).getTime();
+
+          const startMatch = !start || entryDate >= start;
+          const endMatch = !end || entryDate <= end;
+
+          if (startMatch && endMatch) {
+            const att = staff.attendance[day];
+            this.attendanceDays.push({
+              day,
+              status: att.attendance || '—',
+              time: att.time || '—'
+            });
+
+            const status = att.attendance;
+            if (status === 'Present') this.totalPresent++;
+            else if (status === 'Absent') this.totalAbsent++;
+            else if (status === 'HalfDay' || status === 'Half Day') this.totalHalfDay++;
+            else if (status === 'PaidLeave' || status === 'Paid Leave') this.totalPaidLeave++;
+          }
         });
 
         this.fetchCalculatedSalary();
@@ -169,23 +188,25 @@ export class Staffprofile {
       { headers }
     ).subscribe({
       next: (res) => {
-        this.khatabookData = res.khatabook || {};
+        const rawKhatabook = res.khatabook || {};
 
-        // Helper to filter by month/year
-        const filterByDate = (items: any[]) => {
+        // Local filtering by Date Range
+        const filterByRange = (items: any[]) => {
           if (!items || !Array.isArray(items)) return [];
+          const start = this.startDate ? new Date(this.startDate).setHours(0, 0, 0, 0) : null;
+          const end = this.endDate ? new Date(this.endDate).setHours(23, 59, 59, 999) : null;
+
           return items.filter((item: any) => {
-            const date = new Date(item.updatedAt);
-            return (
-              date.getMonth() + 1 === this.selectedMonth &&
-              date.getFullYear() === this.selectedYear
-            );
+            const date = new Date(item.updatedAt || item.createdAt).getTime();
+            const startMatch = !start || date >= start;
+            const endMatch = !end || date <= end;
+            return startMatch && endMatch;
           });
         };
 
-        // Filter transactions
-        this.khatabookData.takenFromAdmin = filterByDate(this.khatabookData.takenFromAdmin);
-        this.khatabookData.givenToAdmin = filterByDate(this.khatabookData.givenToAdmin);
+        this.khatabookData = { ...rawKhatabook };
+        this.khatabookData.takenFromAdmin = filterByRange(rawKhatabook.takenFromAdmin);
+        this.khatabookData.givenToAdmin = filterByRange(rawKhatabook.givenToAdmin);
 
         // Calculate Totals based on filtered data
         this.khatabookData.totalTaken = this.khatabookData.takenFromAdmin.reduce((sum: number, t: any) => sum + t.Rs, 0);
@@ -301,13 +322,34 @@ export class Staffprofile {
     this.totalPaidLeave = 0;
   }
 
-  onMonthChange(event: any) {
-    this.selectedMonth = +event.target.value;
-    this.getStaffAttendance();
-    this.getStaffKhatabook();
+  onDateChange() {
+    if (!this.startDate) return;
+
+    const start = new Date(this.startDate);
+    const newMonth = start.getMonth() + 1;
+    const newYear = start.getFullYear();
+
+    // If month/year changed, re-fetch from backend
+    if (newMonth !== this.selectedMonth || newYear !== this.selectedYear) {
+      this.selectedMonth = newMonth;
+      this.selectedYear = newYear;
+      this.getStaffAttendance();
+      this.getStaffKhatabook();
+    } else {
+      // Just re-filter local data if only day changed but within same month
+      this.getStaffAttendance();
+      this.getStaffKhatabook();
+    }
   }
-  onYearChange(event: any) {
-    this.selectedYear = +event.target.value;
+
+  resetFilters() {
+    const today = new Date();
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    this.startDate = firstDay.toISOString().split('T')[0];
+    this.endDate = lastDay.toISOString().split('T')[0];
+    this.selectedMonth = today.getMonth() + 1;
+    this.selectedYear = today.getFullYear();
     this.getStaffAttendance();
     this.getStaffKhatabook();
   }

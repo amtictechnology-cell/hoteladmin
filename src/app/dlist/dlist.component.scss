@@ -169,6 +169,7 @@
   font-size: 15px;
 }
 
+
 .filter-bar {
   display: flex;
   gap: 12px;
@@ -177,38 +178,66 @@
   margin-top: 10px;
 }
 
-.filter-bar select {
+.date-filter {
+  display: flex;
+  gap: 15px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  background: #f8fafc;
+  padding: 12px 18px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filter-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.date-input {
   padding: 8px 12px;
-  min-width: 140px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
   font-size: 14px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  background-color: #ffffff;
-  color: #374151;
-  cursor: pointer;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  color: #1e293b;
+  background: white;
+  transition: all 0.2s ease;
 }
 
-.filter-bar select:focus {
+.date-input:focus {
   outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.filter-bar select:hover {
-  border-color: #2563eb;
+.btn-reset {
+  padding: 8px 16px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
 }
 
-/* Mobile Responsive */
-@media (max-width: 600px) {
-  .filter-bar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .filter-bar select {
-    width: 100%;
-  }
+.btn-reset:hover {
+  background: #e2e8f0;
+  color: #1e293b;
 }
 
 /* 🔥 Branch Statistics Cards */
@@ -273,13 +302,182 @@
   font-weight: 500;
 }
 
-/* Mobile Responsive */
-@media (max-width: 768px) {
-  .stats-cards {
+/* Responsive Design */
+
+@media (max-width: 1024px) {
+  .top-section {
     flex-direction: column;
+    gap: 15px;
+  }
+
+  .driver-info,
+  .payment-form {
+    flex: none;
+    width: 100%;
+  }
+
+  .stats-cards {
+    gap: 10px;
   }
 
   .stat-card {
-    min-width: 100%;
+    min-width: 160px;
+  }
+}
+
+@media (max-width: 768px) {
+  .driver-profile-container {
+    padding: 10px;
+  }
+
+  .top-section,
+  .bottom-section,
+  .branch-stats-container {
+    padding: 15px;
+    border-radius: 8px;
+  }
+
+  /* Transform Table to Cards */
+  .bottom-section {
+    overflow-x: hidden;
+  }
+
+  table,
+  thead,
+  tbody,
+  th,
+  td,
+  tr {
+    display: block;
+  }
+
+  thead tr {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+
+  tr {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  }
+
+  td {
+    border: none;
+    border-bottom: 1px solid #f8f8f8;
+    position: relative;
+    padding: 12px 10px 12px 45%;
+    text-align: right;
+    font-size: 14px;
+    min-height: 40px;
+  }
+
+  td:last-child {
+    border-bottom: none;
+  }
+
+  td:before {
+    position: absolute;
+    top: 12px;
+    left: 10px;
+    width: 40%;
+    padding-right: 10px;
+    white-space: nowrap;
+    content: attr(data-label);
+    font-weight: 700;
+    color: #350000;
+    text-align: left;
+    font-size: 13px;
+    text-transform: uppercase;
+  }
+
+  td button {
+    width: auto;
+    margin: 5px 0;
+  }
+
+  /* Date Filter */
+  .date-filter {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px;
+  }
+
+  .filter-group {
+    width: 100%;
+  }
+
+  .date-input {
+    width: 100%;
+  }
+
+  .btn-reset {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Stats Cards */
+  .branch-stats-container {
+    padding: 12px;
+    margin: 10px 0;
+  }
+
+  .branch-stats-container h3 {
+    font-size: 15px;
+    margin-bottom: 10px;
+  }
+
+  .stats-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    flex-direction: unset;
+    /* override previous flex-direction: column */
+  }
+
+  .stat-card {
+    min-width: unset;
+    padding: 8px;
+    margin-bottom: 0;
+  }
+
+  .stat-card.total {
+    grid-column: span 2;
+    /* Total card takes full width */
+  }
+
+  .stat-label {
+    font-size: 11px;
+    margin-bottom: 4px;
+  }
+
+  .stat-value {
+    font-size: 22px;
+    margin: 5px 0;
+  }
+
+  .stat-subtitle {
+    font-size: 10px;
+  }
+
+  /* Modal */
+  .modal-dialog {
+    width: 90%;
+    margin: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .driver-info h2 {
+    font-size: 1.4rem;
+  }
+
+  .payment-form h3,
+  .bottom-section h3,
+  .branch-stats-container h3 {
+    font-size: 1.1rem;
   }
 }

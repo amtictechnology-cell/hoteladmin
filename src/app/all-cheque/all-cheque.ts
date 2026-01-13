@@ -135,7 +135,31 @@ export class AllCheque implements OnInit {
       );
     }
 
-    this.filteredCheques = data;
+    // 1️⃣ Sort ASCENDING by returnDate to calculate running balance correctly
+    data.sort((a, b) => {
+      const dateA = a.returnDate ? new Date(a.returnDate).getTime() : 0;
+      const dateB = b.returnDate ? new Date(b.returnDate).getTime() : 0;
+      return dateA - dateB;
+    });
+
+    // 2️⃣ Calculate running balance
+    let currentBalance = 0;
+    data = data.map(item => {
+      if (item.type === 'TAKEN') {
+        currentBalance += Number(item.amount);
+      } else {
+        currentBalance -= Number(item.amount);
+      }
+      return { ...item, runningBalance: currentBalance };
+    });
+
+    // 3️⃣ Re-sort DESCENDING by returnDate for UI (Newest first)
+    this.filteredCheques = data.sort((a, b) => {
+      const dateA = a.returnDate ? new Date(a.returnDate).getTime() : 0;
+      const dateB = b.returnDate ? new Date(b.returnDate).getTime() : 0;
+      return dateB - dateA;
+    });
+
     this.calculateSummary();
   }
 
@@ -143,11 +167,11 @@ export class AllCheque implements OnInit {
   calculateSummary() {
     this.totalTakenCheque = this.filteredCheques
       .filter(c => c.type === 'TAKEN')
-      .reduce((s, c) => s + c.amount, 0);
+      .reduce((s, c) => s + Number(c.amount), 0);
 
     this.totalGivenCheque = this.filteredCheques
       .filter(c => c.type === 'GIVEN')
-      .reduce((s, c) => s + c.amount, 0);
+      .reduce((s, c) => s + Number(c.amount), 0);
 
     this.totalChequeAmount =
       this.totalTakenCheque + this.totalGivenCheque;

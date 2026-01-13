@@ -253,179 +253,200 @@ $radius: 12px;
   }
 }
 
-/* ACTIVITY COLUMNS */
-.activity-columns {
-  display: flex;
-  gap: 24px;
+/* UNIFIED TRANSACTION HISTORY (Khatabook Style) */
+.transaction-history-section {
+  margin-top: 32px;
 
-  .activity-column {
-    flex: 1;
-    min-width: 0;
-
-    .column-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-
-      h3 {
-        margin: 0;
-        font-size: 1.1rem;
-        font-weight: 800;
-        color: #334155;
-      }
-
-      .count-tag {
-        background: #fff;
-        padding: 4px 12px;
-        border-radius: 50px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: #64748b;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-      }
-    }
-  }
-
-  .scrolly-list {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    max-height: 800px;
-    overflow-y: auto;
-    padding-right: 8px;
-
-    &::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 10px;
-    }
-  }
-}
-
-/* TRANSACTION CARD */
-.txn-card {
-  background: #fff;
-  padding: 20px;
-  border-radius: $radius;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  position: relative;
-  border: 1px solid #f1f5f9;
-  transition: all 0.2s;
-
-  &:hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    border-color: #e2e8f0;
-
-    .btn-delete {
-      opacity: 1;
-    }
-  }
-
-  .txn-main {
+  .section-header {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 12px;
+    align-items: center;
+    margin-bottom: 20px;
 
-    .txn-amount {
+    h3 {
+      margin: 0;
       font-size: 1.25rem;
       font-weight: 800;
-      color: #1e293b;
+      color: #334155;
     }
 
-    .txn-date {
-      font-size: 0.8rem;
-      font-weight: 600;
+    .count-tag {
+      background: #fff;
+      padding: 6px 14px;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 700;
       color: #64748b;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     }
   }
+}
 
-  .txn-details {
-    .desc {
-      margin: 0 0 12px;
-      font-size: 0.9rem;
-      color: #475569;
-      line-height: 1.5;
+.unified-list {
+  background: #fff;
+  border-radius: $radius-lg;
+  overflow: hidden;
+
+  .transaction-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background 0.2s;
+
+    &:last-child {
+      border-bottom: none;
     }
 
-    .txn-meta-info {
+    &:hover {
+      background: #f8fafc;
+
+      .mini-delete {
+        opacity: 1;
+      }
+    }
+
+    /* Color Coding */
+    &.earning {
+      .status-marker {
+        background: $success;
+      }
+
+      .amount-val {
+        color: $success;
+      }
+    }
+
+    &.expense {
+      .status-marker {
+        background: $error;
+      }
+
+      .amount-val {
+        color: $error;
+      }
+    }
+
+    .row-left {
       display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px;
 
-      .badge {
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 0.7rem;
-        font-weight: 700;
-        text-transform: uppercase;
+      .status-marker {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
 
-        &.mode {
-          background: #f1f5f9;
-          color: #475569;
+      .txn-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+
+        .txn-desc {
+          font-weight: 700;
+          font-size: 0.95rem;
+          color: #1e293b;
         }
 
-        &.branch {
-          background: #e0f2fe;
-          color: #0369a1;
+        .txn-meta {
+          font-size: 0.75rem;
+          color: #64748b;
+          font-weight: 500;
         }
+      }
+    }
 
-        &.bill {
-          background: #fef3c7;
-          color: #92400e;
+    .row-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+
+      .amount-box {
+        text-align: right;
+
+        .amount-val {
+          font-size: 1.1rem;
+          font-weight: 800;
+        }
+      }
+
+      .row-actions {
+        .mini-delete {
+          background: #fff1f2;
+          border: none;
+          color: #f43f5e;
+          width: 28px;
+          height: 28px;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          opacity: 0;
+          transition: all 0.2s;
+
+          &:hover {
+            background: #ffe4e6;
+            transform: scale(1.1);
+          }
         }
       }
     }
   }
-
-  .btn-delete {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: #fff1f2;
-    border: none;
-    color: #f43f5e;
-    padding: 6px;
-    border-radius: 8px;
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.2s;
-
-    &:hover {
-      background: #ffe4e6;
-      transform: scale(1.1);
-    }
-  }
-
-  &.taken {
-    border-left: 4px solid $error;
-  }
-
-  &.given {
-    border-left: 4px solid $success;
-  }
 }
 
-.empty-list {
+.empty-unified {
+  padding: 60px 24px;
   text-align: center;
-  padding: 40px;
-  background: #f8fafc;
-  border-radius: $radius;
-  border: 2px dashed #e2e8f0;
+  color: #94a3b8;
 
   .empty-icon {
-    font-size: 2.5rem;
-    opacity: 0.3;
+    font-size: 3rem;
     margin-bottom: 12px;
+    opacity: 0.3;
   }
 
   p {
-    margin: 0;
-    color: #94a3b8;
-    font-weight: 500;
+    font-weight: 600;
+  }
+}
+
+/* Responsive Fixes for Unified List */
+@media (max-width: 600px) {
+  .unified-list {
+    .transaction-row {
+      padding: 12px 16px;
+
+      .row-left {
+        gap: 10px;
+
+        .status-marker {
+          width: 8px;
+          height: 8px;
+        }
+
+        .txn-info .txn-desc {
+          font-size: 0.85rem;
+        }
+      }
+
+      .row-right {
+        gap: 12px;
+
+        .amount-box .amount-val {
+          font-size: 0.95rem;
+        }
+
+        .mini-delete {
+          opacity: 1 !important;
+        }
+
+        /* Always show on mobile */
+      }
+    }
   }
 }
 

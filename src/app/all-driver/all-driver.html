@@ -53,12 +53,12 @@
     <table>
       <thead>
         <tr>
-          <th>Sr No</th>
+          <!-- <th>Sr No</th> -->
           <th>SR Number</th>
           <th>Name</th>
           <th>Mobile</th>
           <!-- <th>Car Number</th> -->
-          <th>Created Date</th>
+          <!-- <th>Created Date</th> -->
           <th>Location</th>
           <th>Branch Entries</th>
           <th>Total Entries</th>
@@ -68,21 +68,20 @@
       </thead>
       <tbody>
         <tr *ngFor="let d of filteredDrivers; let i = index">
-          <td>{{ i + 1 }}</td>
-          <td>{{ d.srNumber }}</td>
-          <td>{{ d.name }}</td>
-          <td>{{ d.mobile }}</td>
-          <!-- <td>{{ d.carNumber }}</td> -->
-          <td>{{ d.createdAt | date: 'dd-MM-yyyy' }}</td>
-          <td>{{ d.location || '—' }}</td>
-          <td>{{ d.branchEntryCount || 0 }}</td>
-          <td>{{ d.totalEntries || 0 }}</td>
-          <td>
+          <!-- <td data-label="Sr No">{{ i + 1 }}</td> -->
+          <td data-label="SR Number">{{ d.srNumber }}</td>
+          <td data-label="Name">{{ d.name }}</td>
+          <td data-label="Mobile">{{ d.mobile }}</td>
+          <!-- <td data-label="Created Date">{{ d.createdAt | date: 'dd-MM-yyyy' }}</td> -->
+          <td data-label="Location">{{ d.location || '—' }}</td>
+          <td data-label="Branch Entries">{{ d.branchEntryCount || 0 }}</td>
+          <td data-label="Total Entries">{{ d.totalEntries || 0 }}</td>
+          <td data-label="Whatsapp">
             <button (click)="sendWhatsAppReminder(d)">
               <i class="fa-brands fa-whatsapp"></i> Send
             </button>
           </td>
-          <td><i class="fa-solid fa-envelope-open-text"></i></td>
+          <td data-label="Text"><i class="fa-solid fa-envelope-open-text"></i></td>
         </tr>
       </tbody>
     </table>

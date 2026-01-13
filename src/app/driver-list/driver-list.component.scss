@@ -1,25 +1,28 @@
-
 .driver-container {
   display: flex;
   gap: 20px;
   padding: 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f4f7f6;
+  min-height: calc(100vh - 70px);
 }
 
 /* Left Side Driver List */
 .driver-list {
   flex: 3;
   background: #ffffff;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
 .driver-list h2 {
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   font-size: 22px;
-  font-weight: bold;
-  color: #333;
+  font-weight: 700;
+  color: #350000;
+  border-left: 4px solid #ff0000;
+  padding-left: 12px;
 }
 
 .driver-list ul {
@@ -32,100 +35,186 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #f8f9fa;
-  border-radius: 8px;
-  padding: 12px 16px;
-  margin-bottom: 10px;
-  transition: all 0.2s ease;
+  background: #ffffff;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  padding: 15px 20px;
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+  position: relative;
 }
 
 .driver-list li:hover {
-  background: #e9ecef;
+  background: #fff9f9;
+  border-color: #ffcccc;
   transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
 }
 
 .sr-number {
-  font-weight: bold;
+  font-weight: 800;
   color: #ff0000;
-  margin-right: 10px;
+  font-size: 1.1rem;
+  min-width: 40px;
 }
 
 .driver-name {
-  font-size: 18px;
-  padding-right: 10px;
+  font-size: 1.1rem;
   font-weight: 700;
   color: #333;
   flex: 1;
+  padding: 0 15px;
 }
 
 .driver-details {
-  font-size: 16px;
-  color: #555;
-  margin-right: auto;
-  padding-right: 40px;
+  display: flex;
+  gap: 20px;
+  font-size: 0.95rem;
+  color: #666;
+  flex: 2;
+}
+
+.driver-details div {
+  white-space: nowrap;
 }
 
 .btn-edit {
-  background: #ff0000;
+  background: #350000;
   border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
   font-size: 14px;
   color: white;
-
+  font-weight: 600;
 }
 
 .btn-edit:hover {
-  background: #6b0000;
-  color: white;
+  background: #ff0000;
 }
 
 /* Right Side (Search + Add) */
 .driver-actions {
   flex: 1;
   background: #ffffff;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  height: fit-content;
+  position: sticky;
+  top: 90px;
 }
 
 .driver-actions h2 {
-  margin-bottom: 12px;
+  margin-bottom: 20px;
   font-size: 20px;
-  font-weight: bold;
-  color: #333;
+  font-weight: 700;
+  color: #350000;
 }
 
 .driver-actions input {
   width: 100%;
-  padding: 10px 12px;
-  margin-bottom: 15px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  transition: border 0.2s ease;
+  padding: 12px 15px;
+  margin-bottom: 20px;
+  border: 2px solid #eee;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  font-size: 16px;
+  box-sizing: border-box;
 }
 
 .driver-actions input:focus {
   outline: none;
   border-color: #ff0000;
+  background: #fff;
 }
 
 .btn-secondary {
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   background: #ff0000;
   border: none;
-  border-radius: 6px;
+  border-radius: 10px;
   color: #fff;
-  font-weight: bold;
+  font-weight: 700;
+  font-size: 16px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .btn-secondary:hover {
-  background: #5e0404;
+  background: #350000;
+  transform: scale(1.02);
+}
+
+/* ---------------- Responsive Styling ---------------- */
+
+/* Tablet View */
+@media (max-width: 1024px) {
+  .driver-container {
+    flex-direction: column-reverse;
+    padding: 15px;
+  }
+
+  .driver-actions {
+    position: relative;
+    top: 0;
+    margin-bottom: 20px;
+  }
+
+  .driver-details {
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+  }
+}
+
+/* Mobile View */
+@media (max-width: 600px) {
+  .driver-list li {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 15px;
+  }
+
+  .sr-number {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: #ffeded;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    min-width: unset;
+  }
+
+  .driver-name {
+    padding: 0;
+    font-size: 1.2rem;
+  }
+
+  .driver-details {
+    width: 100%;
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+  }
+
+  .btn-edit {
+    width: 100%;
+    margin-top: 5px;
+    padding: 10px;
+  }
+
+  .modal-content {
+    width: 90%;
+    padding: 20px;
+  }
 }
 
 /* ---------------- Modal Styling ---------------- */
@@ -135,58 +224,77 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 999;
+  z-index: 2000;
+  backdrop-filter: blur(4px);
 }
 
 .modal-content {
   background: #fff;
-  padding: 25px;
-  border-radius: 12px;
-  width: 400px;
+  padding: 30px;
+  border-radius: 15px;
+  width: 450px;
   max-width: 95%;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-  animation: fadeIn 0.3s ease;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  animation: modalIn 0.3s ease-out;
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .modal-content h3 {
-  margin-bottom: 15px;
-  color: #333;
+  margin-bottom: 20px;
+  color: #350000;
+  font-weight: 700;
+  text-align: center;
 }
 
 .modal-content form {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 12px;
 }
 
 .modal-content label {
-  font-weight: 500;
-  color: #444;
+  font-weight: 600;
+  color: #555;
+  font-size: 0.9rem;
 }
 
 .modal-content input {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  transition: border 0.2s ease;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  font-size: 1rem;
 }
 
 .modal-content input:focus {
   border-color: #ff0000;
   outline: none;
+  background: #fff9f9;
 }
 
 .modal-content button {
-  padding: 10px;
+  padding: 12px;
   border: none;
-  border-radius: 6px;
-  font-weight: bold;
+  border-radius: 8px;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  margin-top: 5px;
 }
 
 .modal-content button[type="submit"] {
@@ -195,70 +303,19 @@
 }
 
 .modal-content button[type="submit"]:hover {
-  background: #500000;
+  background: #350000;
 }
 
 .modal-content button[type="button"] {
-  background: #ff0000;
-  color: #fff;
+  background: #f4f4f4;
+  color: #666;
 }
 
 .modal-content button[type="button"]:hover {
-  background: #2e0101;
+  background: #eee;
 }
 
-/* Animation */
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
-}
-.toast {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0.8);
-  min-width: 260px;
-  max-width: 80%;
-  background: #333;
-  color: #fff;
-  padding: 16px 22px;
-  border-radius: 10px;
-  text-align: center;
-  box-shadow: 0 6px 15px rgba(0,0,0,0.3);
-  font-size: 15px;
-  font-weight: 500;
-  opacity: 0;
-  animation: popupShow 0.4s ease forwards, popupHide 0.4s ease 2.6s forwards;
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-
-  &.success { background: linear-gradient(135deg, #28a745, #218838); }
-  &.error { background: linear-gradient(135deg, #dc3545, #b52a37); }
-  &.warning { background: linear-gradient(135deg, #ffc107, #d39e00); color: #222; }
-
-  .icon {
-    font-size: 1.5rem;
-    animation: iconPop 0.3s ease;
-  }
-}
-
-@keyframes popupShow {
-  from { transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
-  to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-}
-
-@keyframes popupHide {
-  to { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
-}
-
-@keyframes iconPop {
-  0% { transform: scale(0.6); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
-}
-/* Screen blur when popup active */
+/* SUCCESS POPUP */
 .success-overlay {
   position: fixed;
   top: 0;
@@ -266,32 +323,32 @@
   width: 100%;
   height: 100%;
   backdrop-filter: blur(5px);
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 99999;
+  z-index: 3000;
 }
 
-/* Popup box */
 .success-box {
-  background: #2ecc71; /* green */
-  padding: 22px 35px;
+  background: #2ecc71;
+  padding: 25px 40px;
   border-radius: 12px;
   color: #fff;
-  font-size: 20px;
+  font-size: 1.2rem;
+  font-weight: 700;
   text-align: center;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-  animation: popupScale 0.3s ease;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  animation: successIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* Smooth animation */
-@keyframes popupScale {
-  0% {
-    transform: scale(0.3);
+@keyframes successIn {
+  from {
+    transform: scale(0.5);
     opacity: 0;
   }
-  100% {
+
+  to {
     transform: scale(1);
     opacity: 1;
   }

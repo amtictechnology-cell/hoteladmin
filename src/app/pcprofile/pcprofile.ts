@@ -25,6 +25,11 @@ export class Pcprofile implements OnInit {
     description: '',
     status: 'Pending'
   };
+  months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
 
   paymentScreenshot: File | null = null;
   entries: any[] = [];
@@ -52,15 +57,26 @@ export class Pcprofile implements OnInit {
   editForm = {
     billAmount: 0,
     amountPaidAfterDiscount: 0,
-    paymentMode: 'cash'
+    paymentMode: 'cash',
+    status: 'Pending'
   };
+  branches = ['Gokulpurabranch', 'Sikarbranch', 'Sanwalibranch'];
+  selectedBranch = '';
+  allEntries: any[] = [];
+
+  /* ================= FILTER STATE ================= */
+  years: number[] = [];           // Auto-generated from API data
+  selectedMonth: string = '';     // '' = All months, '0'-'11' = specific month
+  selectedYear: string = '';      // '' = All years, '2024' = specific year
+
 
   openEditModal(entry: any) {
     this.selectedEntry = entry;
     this.editForm = {
       billAmount: entry.billAmount,
       amountPaidAfterDiscount: entry.amountPaidAfterDiscount,
-      paymentMode: entry.paymentMode
+      paymentMode: entry.paymentMode,
+      status: entry.status
     };
     this.showEditModal = true;
   }
@@ -86,7 +102,8 @@ export class Pcprofile implements OnInit {
       personalCustomerEntryId: this.selectedEntry._id || this.selectedEntry.id, // API expects this
       billAmount: this.editForm.billAmount,
       amountPaidAfterDiscount: String(this.editForm.amountPaidAfterDiscount),
-      paymentMode: this.editForm.paymentMode
+      paymentMode: this.editForm.paymentMode,
+      status: this.editForm.status
     };
 
     this.isProcessing = true;
@@ -149,6 +166,8 @@ export class Pcprofile implements OnInit {
     ).subscribe({
       next: res => {
         this.entries = res.data || [];
+        this.allEntries = [...this.entries]; // Store original for filtering
+        this.extractYears(); // Auto-generate year options
         this.calculateTotals();
         this.loadingEntries = false;
       },
@@ -226,4 +245,72 @@ export class Pcprofile implements OnInit {
       }
     });
   }
+  filterByBranch(branch: string) {
+    this.selectedBranch = branch;
+    this.applyFilters();
+  }
+  /* ================= YEAR EXTRACTION ================= */
+  extractYears() {
+    const yearSet = new Set<number>();
+    this.allEntries.forEach(e => {
+      const d = new Date(e.createdAt);
+      if (!isNaN(d.getTime())) {
+        yearSet.add(d.getFullYear());
+      }
+    });
+    // Sort years in descending order (latest first)
+    this.years = Array.from(yearSet).sort((a, b) => b - a);
+  }
+
+  /* ================= FILTER HANDLERS ================= */
+  onMonthChange(event: Event) {
+    const selectEl = event.target as HTMLSelectElement;
+    this.selectedMonth = selectEl?.value ?? '';
+    this.applyFilters();
+  }
+
+  onYearChange(event: Event) {
+    const selectEl = event.target as HTMLSelectElement;
+    this.selectedYear = selectEl?.value ?? '';
+    this.applyFilters();
+  }
+
+  /* ================= COMBINED FILTER LOGIC ================= */
+  applyFilters() {
+    let filtered = [...this.allEntries];
+
+    // Apply branch filter if selected
+    if (this.selectedBranch) {
+      filtered = filtered.filter(e => e.hotelBranchName === this.selectedBranch);
+    }
+
+    // Apply month filter if selected
+    if (this.selectedMonth !== '') {
+      filtered = filtered.filter(e => {
+        const d = new Date(e.createdAt);
+        return d.getMonth() === Number(this.selectedMonth);
+      });
+    }
+
+    // Apply year filter if selected
+    if (this.selectedYear !== '') {
+      filtered = filtered.filter(e => {
+        const d = new Date(e.createdAt);
+        return d.getFullYear() === Number(this.selectedYear);
+      });
+    }
+
+    this.entries = filtered;
+    this.calculateTotals();
+  }
+
+  /* ================= RESET ALL FILTERS ================= */
+  resetFilters() {
+    this.selectedBranch = '';
+    this.selectedMonth = '';
+    this.selectedYear = '';
+    this.entries = [...this.allEntries];
+    this.calculateTotals();
+  }
+
 }

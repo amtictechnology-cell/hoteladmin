@@ -1,0 +1,40 @@
+<!-- Header -->
+<div class="notes-header">
+  <h3>My Notes</h3>
+  <button class="add-btn" (click)="openAddModal()">+ Add Note</button>
+</div>
+
+<!-- Notes List -->
+<div class="notes-list">
+  <div class="note-card" *ngFor="let note of notesList">
+
+    <div class="note-date">
+      {{ note.createdAt | date:'dd MMM yyyy, hh:mm a' }}
+    </div>
+
+    <p class="note-text">{{ note.note }}</p>
+
+    <button class="edit-btn" (click)="openEditModal(note)">
+      ✏️ Edit
+    </button>
+  </div>
+</div>
+
+<!-- Modal -->
+<!-- MODAL BACKDROP -->
+<div class="custom-modal-backdrop" *ngIf="showModal" (click)="closeModal()">
+
+  <!-- MODAL BOX -->
+  <div class="custom-modal" (click)="$event.stopPropagation()">
+    <h4>{{ isEditMode ? 'Edit Note' : 'Add Note' }}</h4>
+
+    <textarea [(ngModel)]="noteText" placeholder="Write your note...">
+    </textarea>
+
+    <div class="modal-actions">
+      <button class="cancel" (click)="closeModal()">Cancel</button>
+      <button class="save" (click)="saveNote()">Save</button>
+    </div>
+  </div>
+
+</div>
